@@ -1,0 +1,19 @@
+apply plugin:'groovy'
+apply plugin:'application'
+
+mainClassName = ''
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.1.8'
+    compile 'com.yammer.dropwizard:dropwizard-core:0.6.2'
+    compile 'com.google.inject:guice:3.0'
+}
+
+task libs(type: Sync) {
+    from configurations.runtime
+    into "build/libs"
+}
