@@ -1,19 +1,38 @@
-apply plugin:'groovy'
-apply plugin:'application'
+apply plugin: 'groovy'
+apply plugin: 'application'
 
-mainClassName = ''
+mainClassName = 'GroovyService'
 
 repositories {
-    mavenCentral()
+  mavenCentral()
+  mavenRepo(name: "JQuery", url: "http://code.jquery.com") {
+    pattern = "[module]-[revision](.[classifier]).[ext]"
+  }
+//  mavenRepo(name:"gRaphael", url: "https://raw.github.com/DmitryBaranovskiy/g.raphael/master/min") {
+//    pattern = "module-(.[classifier]).[ext]"
+//  }
+}
+
+configurations {
+  js
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.1.8'
-    compile 'com.yammer.dropwizard:dropwizard-core:0.6.2'
-    compile 'com.google.inject:guice:3.0'
+  compile 'org.codehaus.groovy:groovy-all:2.1.8'
+  compile 'com.yammer.dropwizard:dropwizard-core:0.6.2'
+  compile 'com.yammer.dropwizard:dropwizard-views:0.6.2'
+  compile 'com.google.inject:guice:3.0'
+
+  js group: 'jquery', name: 'jquery', version: '1.6.4', classifier: 'min', ext: "js"
+//  js name: 'g.raphael', version: '0.51', classifier: 'min', ext: "js"
 }
 
 task libs(type: Sync) {
-    from configurations.runtime
-    into "build/libs"
+  from configurations.runtime
+  into "build/libs"
+}
+
+task fetchJs(type: Copy) {
+  from configurations.js
+  into "$buildDir/resources/assets/js"
 }

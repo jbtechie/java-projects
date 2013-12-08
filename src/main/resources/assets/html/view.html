@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script src="/js/jquery-1.6.4-min.js"></script>
+<script src="/js/raphael-min.js"></script>
+<script src="/js/g.raphael-min.js"></script>
+<script src="/js/g.line-min.js"></script>
+<script src="/js/g.pie-min.js"></script>
+<script>
+    $( document ).ready(function() {
+        // Creates canvas 640 × 480 at 10, 50
+        var r = Raphael(10, 50, 640, 480);
+        $.ajax({
+            url: "/service/map",
+            success: function(coords) {
+                r.linechart(0, 0, 640, 480, coords.times, coords.counts);
+            }
+        });
+    });
+</script>
+</body>
+</html>
