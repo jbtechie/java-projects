@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.yammer.dropwizard.config.Environment
 import org.eclipse.jetty.util.ajax.JSON
@@ -17,6 +18,7 @@ import java.util.concurrent.Executors
 class GroovyResource {
 
   def rand
+  def mapper = new ObjectMapper()
 
   @Inject
   GroovyResource(Environment env, Random rand) {
@@ -30,6 +32,13 @@ class GroovyResource {
     Executors.newFixedThreadPool(16).invokeAll((1..100).collectNested { f as Callable })
     System.out.println('done')
     return [rand: rand.nextInt()]
+  }
+
+  @GET
+  @Path("entries")
+  def entries() {
+    def l = [1,2,3]
+    return l.collectEntries { [it, it**2] }
   }
 
   @GET
@@ -61,6 +70,35 @@ class GroovyResource {
     if (!o)
       throw new WebApplicationException(Response.Status.BAD_REQUEST)
     return JSON.parse(o).foo
+  }
+
+  @GET
+  @Path("run")
+  def run() {
+//    def cpus = (1..2).collect { new CPU(6)}
+//    return cpus
+
+    def cpu = new CPU(6).with {
+      randMem()
+      it
+    }
+
+    def before = JSON.parse(mapper.writeValueAsString(cpu))
+    cpu.sim(2**13)
+    def after = JSON.parse(mapper.writeValueAsString(cpu))
+
+//    return before == after
+    return [before:before.mem, after:after.mem]
+
+//    def json = new ObjectMapper().writeValueAsString(expected)
+//    def test = new CPU(JSON.parse(json))
+//    return json.length()
+  }
+
+  @GET
+  @Path('sleep')
+  def sleep() {
+    Thread.sleep(62*1000)
   }
 
   static class GroovyResponse {
