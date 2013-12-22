@@ -49,17 +49,37 @@ class GroovyResource {
         arguments: [],
         metrics: [
           generations: [
-            [time: 0.2, count: 55],
-            [time: 0.4, count: 90],
-            [time: 0.6, count: 1]
           ]
         ]
       ]
 
-    def coords = [
-      times: report.metrics.generations.collect { it.time },
-      counts: report.metrics.generations.collect { it.count }
-    ]
+    (1..100).each { i ->
+      new CPU(6).with { cpu ->
+        randMem()
+        cpu.sim(cpu.WORD_SIZE)
+        cpu.mem.eachWithIndex { it, idx ->
+          report.metrics.generations.add([x:idx, y:it, z:1])
+        }
+      }
+    }
+
+    def hist = [:]
+    report.metrics.generations.each {
+      def key = [it.x, ((int)it.y/100)*100]
+      if(key in hist)
+        hist[key] += it.z
+      else
+        hist[key] = it.z
+    }
+
+    def coords = [x:[], y:[], z:[]]
+    hist.each { k, v ->
+      coords.x << k[0]
+      coords.y << k[1]
+      coords.z << v
+    }
+
+    println coords.x.size()
 
     return coords
   }
