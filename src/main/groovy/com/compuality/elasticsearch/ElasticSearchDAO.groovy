@@ -3,6 +3,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.google.inject.Provider
 import org.elasticsearch.action.bulk.BulkRequestBuilder
+import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.client.Client
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -26,12 +27,10 @@ class ElasticSearchDAO {
 
   void addDocuments(String index, String type, Observable<String> documents) {
     Client client = clientProvider.get()
-    BulkRequestBuilder bulkRequestBuilder = client.prepareBulk()
 
-    documents.map({ client.prepareIndex(index, type).setSource(it) } as Func1)
-        .doOnEach({ bulkRequestBuilder.add(it) } as Action1)
-        .doOnCompleted({ bulkRequestBuilder.execute() } as Action0)
-        .subscribe()
+    Observable<IndexRequestBuilder> requests = documents.map({ client.prepareIndex(index, type)
+                                                                     .setSource(it) } as Func1)
+    bulkIndex(client, requests)
   }
 
   void addObjects(String index, String type, Observable<Object> objects) {
@@ -40,15 +39,23 @@ class ElasticSearchDAO {
 
   void addDocumentsWithHashId(String index, String type, Observable<String> documents) {
     Client client = clientProvider.get()
-    BulkRequestBuilder bulkRequestBuilder = client.prepareBulk()
 
-    documents.map({ client.prepareIndex(index, type).setSource(it).setId(UUID.nameUUIDFromBytes(it.bytes).toString()) } as Func1)
-      .doOnEach({ bulkRequestBuilder.add(it) } as Action1)
-      .doOnCompleted({ bulkRequestBuilder.execute() } as Action0)
-      .subscribe()
+    Observable<IndexRequestBuilder> requests = documents.map({ client.prepareIndex(index, type)
+                                                                     .setSource(it)
+                                                                     .setId(UUID.nameUUIDFromBytes(it.bytes).toString()) } as Func1)
+    bulkIndex(client, requests)
   }
 
   void addObjectsWithHashId(String index, String type, Observable<Object> objects) {
     addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
+  }
+
+  private static void bulkIndex(Client client, Observable<IndexRequestBuilder> requests) {
+    BulkRequestBuilder bulkRequestBuilder = client.prepareBulk()
+    requests.synchronize()
+            .doOnEach({ bulkRequestBuilder.add(it) } as Action1)
+            .doOnCompleted({ bulkRequestBuilder.execute() } as Action0)
+            .finallyDo({ client.close() } as Action0)
+            .subscribe()
   }
 }
