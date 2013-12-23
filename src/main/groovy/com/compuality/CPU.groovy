@@ -1,3 +1,5 @@
+package com.compuality
+
 import groovy.transform.AutoClone
 
 @AutoClone

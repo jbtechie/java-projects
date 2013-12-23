@@ -1,3 +1,6 @@
+package com.compuality.dropwizard.views
+
+import com.compuality.elasticsearch.ElasticSearchModule
 import com.google.inject.Guice
 import com.yammer.dropwizard.Service
 import com.yammer.dropwizard.assets.AssetsBundle
@@ -16,8 +19,8 @@ class GroovyService extends Service<Configuration> {
 
     @Override
     void run(Configuration config, Environment env) throws Exception {
-//        environment.addResource(new GroovyResource());
-        Guice.createInjector(new GroovyModule(config, env));
+//        environment.addResource(new com.compuality.dropwizard.views.GroovyResource());
+        Guice.createInjector(new GroovyModule(config, env), new ElasticSearchModule());
     }
 
     public static void main(String[] args) throws Exception {

@@ -1,0 +1,3 @@
+cluster.name: compuality
+path:
+  data: /tmp/es/data

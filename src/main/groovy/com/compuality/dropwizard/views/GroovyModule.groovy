@@ -1,3 +1,5 @@
+package com.compuality.dropwizard.views
+
 import com.google.inject.AbstractModule
 import com.yammer.dropwizard.config.Configuration
 import com.yammer.dropwizard.config.Environment

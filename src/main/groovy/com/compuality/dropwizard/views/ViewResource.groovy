@@ -1,6 +1,6 @@
+package com.compuality.dropwizard.views
 import com.google.inject.Inject
 import com.yammer.dropwizard.config.Environment
-import views.GroovyView
 
 import javax.ws.rs.GET
 import javax.ws.rs.Path

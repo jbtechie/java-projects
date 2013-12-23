@@ -1,3 +1,6 @@
+package com.compuality.dropwizard.views
+
+import com.compuality.CPU
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.yammer.dropwizard.config.Environment
@@ -95,7 +98,7 @@ class GroovyResource {
   @GET
   @Path("run")
   def run() {
-//    def cpus = (1..2).collect { new CPU(6)}
+//    def cpus = (1..2).collect { new com.compuality.CPU(6)}
 //    return cpus
 
     def cpu = new CPU(6).with {
@@ -111,7 +114,7 @@ class GroovyResource {
     return [before:before.mem, after:after.mem]
 
 //    def json = new ObjectMapper().writeValueAsString(expected)
-//    def test = new CPU(JSON.parse(json))
+//    def test = new com.compuality.CPU(JSON.parse(json))
 //    return json.length()
   }
 

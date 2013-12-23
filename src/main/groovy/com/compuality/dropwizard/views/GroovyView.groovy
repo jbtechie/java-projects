@@ -1,4 +1,4 @@
-package views
+package com.compuality.dropwizard.views
 
 import com.yammer.dropwizard.views.View
 
