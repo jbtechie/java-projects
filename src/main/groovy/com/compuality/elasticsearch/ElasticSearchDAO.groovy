@@ -52,8 +52,11 @@ class ElasticSearchDAO {
 
   private static void bulkIndex(Client client, Observable<IndexRequestBuilder> requests) {
     BulkRequestBuilder bulkRequestBuilder = client.prepareBulk()
+
     requests.synchronize()
             .doOnEach({ bulkRequestBuilder.add(it) } as Action1)
+            .count()
+            .doOnEach({ logger.debug('Added {} index requests.', it)} as Action1)
             .doOnCompleted({ bulkRequestBuilder.execute() } as Action0)
             .finallyDo({ client.close() } as Action0)
             .subscribe()
