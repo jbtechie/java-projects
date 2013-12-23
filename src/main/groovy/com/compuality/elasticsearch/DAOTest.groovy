@@ -8,6 +8,6 @@ class DAOTest {
 
   @Inject
   DAOTest(ElasticSearchDAO dao) {
-    dao.addObjects('experiments', 'exp', Observable.<Map>from([ [label:1], [label:2], [label:3]]))
+    dao.addObjectsWithHashId('experiments', 'exp', Observable.<Map>from([ [label:1], [label:2], [label:3]]))
   }
 }

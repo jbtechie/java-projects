@@ -1,18 +1,21 @@
 package com.compuality.elasticsearch
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Throwables
 import com.google.inject.Inject
+import com.google.inject.Provider
 import org.elasticsearch.action.bulk.BulkRequestBuilder
 import org.elasticsearch.action.bulk.BulkResponse
+import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.client.Client
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.Observer
 import rx.util.functions.Func1
 
-import javax.inject.Provider
-
 class ElasticSearchDAO {
+
+  private static Logger logger = LoggerFactory.getLogger(ElasticSearchDAO)
 
   private Provider<Client> clientProvider
   private ObjectMapper mapper
@@ -24,14 +27,30 @@ class ElasticSearchDAO {
   }
 
   void addDocuments(String index, String type, Observable<String> documents) {
-    documents.subscribe(new BulkLoadingObserver(clientProvider.get(), index, type))
+    documents.map({ clientProvider.get().prepareIndex(index, type).setSource(it) } as Func1)
+        .subscribe(new BulkLoadingObserver(clientProvider.get(), index, type))
   }
 
   void addObjects(String index, String type, Observable<Object> objects) {
     addDocuments(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
   }
 
-  private static class BulkLoadingObserver implements Observer<String> {
+  void addDocumentsWithHashId(String index, String type, Observable<String> documents) {
+    documents.map({ client.prepareIndex(index, type).setSource(it) })
+      .map({ it.setId(UUID.nameUUIDFromBytes(it.getSource().bytes)) })
+      .subscribe(new BulkLoadingObserver(client.get(), index, type))
+  }
+
+  void addObjectsWithHashId(String index, String type, Observable<Object> objects) {
+//    addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
+    objects.map({ mapper.writeValueAsString(it) } as Func1)
+      .map({ clientProvider.get().prepareIndex(index, type)
+          .setSource(it)
+          .setId(UUID.nameUUIDFromBytes(it.bytes).toString()) } as Func1)
+      .subscribe(new BulkLoadingObserver(clientProvider.get(), index, type))
+  }
+
+  private static class BulkLoadingObserver implements Observer<IndexRequestBuilder> {
 
     private Client client
     private String index
@@ -39,6 +58,7 @@ class ElasticSearchDAO {
     private BulkRequestBuilder builder
 
     BulkLoadingObserver(Client client, String index, String type) {
+      logger.debug("created")
       this.client = client
       this.index = index
       this.type = type
@@ -46,19 +66,19 @@ class ElasticSearchDAO {
     }
 
     @Override
-    void onNext(String doc) {
-      println "adding ${doc}"
-      builder.add(client.prepareIndex(index, type).setSource(doc))
+    synchronized void onNext(IndexRequestBuilder indexRequestBuilder) {
+      logger.debug("adding {}", indexRequestBuilder)
+      builder.add(indexRequestBuilder)
     }
 
     @Override
     void onCompleted() {
-      println 'executing'
+      logger.debug('executing')
       BulkResponse response = builder.execute().actionGet()
       if(response.hasFailures()) {
-        println 'FAILURES'
+        logger.error('FAILURES')
         response.each {
-          println "\t${it.failureMessage}"
+          logger.error("\t${it.failureMessage}")
         }
       }
     }

@@ -1,2 +1,6 @@
+logging:
+  level: INFO
+  loggers:
+    "com.compuality": DEBUG
 http:
   rootPath: /service/*  # Default is /*
