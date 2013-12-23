@@ -27,8 +27,9 @@ class ElasticSearchDAO {
   }
 
   void addDocuments(String index, String type, Observable<String> documents) {
-    documents.map({ clientProvider.get().prepareIndex(index, type).setSource(it) } as Func1)
-        .subscribe(new BulkLoadingObserver(clientProvider.get(), index, type))
+    Client client = clientProvider.get()
+    documents.map({ client.prepareIndex(index, type).setSource(it) } as Func1)
+        .subscribe(new BulkLoadingObserver(client, index, type))
   }
 
   void addObjects(String index, String type, Observable<Object> objects) {
@@ -36,19 +37,21 @@ class ElasticSearchDAO {
   }
 
   void addDocumentsWithHashId(String index, String type, Observable<String> documents) {
-    documents.map({ client.prepareIndex(index, type).setSource(it) })
-      .map({ it.setId(UUID.nameUUIDFromBytes(it.getSource().bytes)) })
-      .subscribe(new BulkLoadingObserver(client.get(), index, type))
+    Client client = clientProvider.get()
+    documents.map({ client.prepareIndex(index, type).setSource(it).setId(UUID.nameUUIDFromBytes(it.bytes).toString()) } as Func1)
+      .subscribe(new BulkLoadingObserver(client, index, type))
   }
 
   void addObjectsWithHashId(String index, String type, Observable<Object> objects) {
-//    addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
-    objects.map({ mapper.writeValueAsString(it) } as Func1)
-      .map({ clientProvider.get().prepareIndex(index, type)
-          .setSource(it)
-          .setId(UUID.nameUUIDFromBytes(it.bytes).toString()) } as Func1)
-      .subscribe(new BulkLoadingObserver(clientProvider.get(), index, type))
+    addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
   }
+
+//  private static class DocumentToIndexRequestBuilderWithHash implements Func1<String, IndexRequestBuilder> {
+//    @Override
+//    IndexRequestBuilder call(String o) {
+//      return null
+//    }
+//  }
 
   private static class BulkLoadingObserver implements Observer<IndexRequestBuilder> {
 
