@@ -1,4 +1,4 @@
-package com.compuality
+package com.compuality.cpu
 
 import groovy.transform.AutoClone
 
