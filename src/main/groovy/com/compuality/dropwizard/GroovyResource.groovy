@@ -1,4 +1,4 @@
-package com.compuality.dropwizard.views
+package com.compuality.dropwizard
 
 import com.compuality.CPU
 import com.fasterxml.jackson.databind.ObjectMapper

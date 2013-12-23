@@ -1,5 +1,6 @@
-package com.compuality.dropwizard.views
+package com.compuality.dropwizard
 
+import com.compuality.dropwizard.views.ViewResource
 import com.google.inject.AbstractModule
 import com.yammer.dropwizard.config.Configuration
 import com.yammer.dropwizard.config.Environment

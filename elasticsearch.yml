@@ -1,0 +1,8 @@
+cluster:
+  name: compuality
+
+node:
+  local: true
+
+#path:
+#  data: /tmp/es/data

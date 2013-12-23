@@ -1,4 +1,4 @@
-package com.compuality.dropwizard.views
+package com.compuality.dropwizard
 
 import com.compuality.elasticsearch.ElasticSearchModule
 import com.google.inject.Guice
@@ -19,7 +19,6 @@ class GroovyService extends Service<Configuration> {
 
     @Override
     void run(Configuration config, Environment env) throws Exception {
-//        environment.addResource(new com.compuality.dropwizard.views.GroovyResource());
         Guice.createInjector(new GroovyModule(config, env), new ElasticSearchModule());
     }
 
