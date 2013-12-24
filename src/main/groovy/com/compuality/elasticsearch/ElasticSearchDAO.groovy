@@ -9,10 +9,10 @@ import org.elasticsearch.client.Client
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
-import rx.Observable.OnSubscribeFunc
 import rx.util.functions.Action0
 import rx.util.functions.Action1
 import rx.util.functions.Func1
+import rx.util.functions.Func2
 
 class ElasticSearchDAO {
 
@@ -33,7 +33,7 @@ class ElasticSearchDAO {
     Observable<IndexRequestBuilder> requests = documents.map({ client.prepareIndex(index, type)
                                                                      .setSource(it) } as Func1)
 
-    bulkIndex(client, requests).mapMany({ Observable.from(it.getItems()) } as Func1).subscribe()
+    bulkIndex(client, requests).mapMany({ Observable.from(it.getItems()) } as Func1)
   }
 
   void addObjects(String index, String type, Observable<Object> objects) {
@@ -54,19 +54,16 @@ class ElasticSearchDAO {
   }
 
   private static Observable<BulkResponse> bulkIndex(Client client, Observable<IndexRequestBuilder> requests) {
-    return Observable.create({ observer ->
+    return requests.synchronize()
+      .doOnError({ logger.error(it) } as Action1)
+      .finallyDo({ client.close() } as Action0)
+      .finallyDo({ logger.debug('Done') } as Action0)
+      .reduce([objects:[], builder:client.prepareBulk()], { bulkResult, request -> bulkResult.builder.add(request) } as Func2)
+      .map({ builder -> builder.execute().actionGet() } as Func1)
+  }
 
-      BulkRequestBuilder bulkRequestBuilder = client.prepareBulk()
-
-      return requests.synchronize()
-        .doOnEach({ bulkRequestBuilder.add(it) } as Action1)
-        .count()
-        .doOnEach({ logger.debug('Added {} index requests.', it)} as Action1)
-        .doOnCompleted({ observer.onNext(bulkRequestBuilder.execute().actionGet()); observer.onCompleted() } as Action0)
-        .doOnError({ observer.onError(it) } as Action1)
-        .finallyDo({ client.close() } as Action0)
-        .subscribe()
-
-    } as OnSubscribeFunc<BulkResponse>)
+  static class AddResult {
+    List<Object> objects = []
+    BulkRequestBuilder builder
   }
 }

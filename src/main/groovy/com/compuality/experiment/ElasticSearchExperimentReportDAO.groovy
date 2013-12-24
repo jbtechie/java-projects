@@ -1,5 +1,4 @@
 package com.compuality.experiment
-
 import com.compuality.elasticsearch.ElasticSearchDAO
 import com.compuality.experiment.ExperimentReport.CreateRequest
 import com.compuality.experiment.ExperimentReport.GenerationReport
@@ -41,21 +40,37 @@ class ElasticSearchExperimentReportDAO implements ExperimentReport.DAO {
   }
 
   @Override
-  Observable<ExperimentReport> createExperiment(Observable<CreateRequest> request) {
-    return Observable.create({ observer ->
+  Observable<ExperimentReport> createExperiments(Observable<CreateRequest> request) {
+    def reports = request.cast(ExperimentReport)
+    def o = Observable.create({ observer ->
+      return reports.subscribe(new rx.Observer<ExperimentReport>() {
+        @Override
+        void onCompleted() {
+          observer.onCompleted()
+        }
 
-      dao.addObjects(INDEX, TYPE, request)
+        @Override
+        void onError(Throwable e) {
+          observer.onError(e)
+        }
 
+        @Override
+        void onNext(ExperimentReport arg) {
+          logger.debug()
+          observer.onNext()
+        }
+      })
     } as OnSubscribeFunc)
+    dao.addObjects(INDEX, TYPE, request)
   }
 
   @Override
-  Observable<GenerationReport> createGeneration(Observable<GenerationReport.CreateRequest> request) {
+  Observable<GenerationReport> createGenerations(Observable<GenerationReport.CreateRequest> request) {
     return null
   }
 
   @Override
-  Observable<LifeReport> createLife(Observable<LifeReport.CreateRequest> request) {
+  Observable<LifeReport> createLives(Observable<LifeReport.CreateRequest> request) {
     return null
   }
 }

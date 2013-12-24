@@ -36,10 +36,10 @@ class ExperimentReport {
 
     Observable<LifeReport> getLifeReports(UUID experimentId, long generationIndex)
 
-    Observable<ExperimentReport> createExperiment(Observable<CreateRequest> request)
+    Observable<ExperimentReport> createExperiments(Observable<CreateRequest> request)
 
-    Observable<GenerationReport> createGeneration(Observable<GenerationReport.CreateRequest> request)
+    Observable<GenerationReport> createGenerations(Observable<GenerationReport.CreateRequest> request)
 
-    Observable<LifeReport> createLife(Observable<LifeReport.CreateRequest> request)
+    Observable<LifeReport> createLives(Observable<LifeReport.CreateRequest> request)
   }
 }
