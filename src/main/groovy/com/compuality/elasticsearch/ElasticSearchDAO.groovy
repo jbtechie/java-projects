@@ -43,17 +43,20 @@ class ElasticSearchDAO {
   }
 
   Observable addObjectsWithHashIdAndTime(String index, String type, Observable<Object> objects) {
-    ConnectableObservable<Object> connectable = objects.synchronize().publish()
+    ConnectableObservable<Object> connectable = objects.publish()
+
+    Observable original = connectable.map({ it })
+    original.subscribe()
 
 //    connectable.timeInterval().subscribe({ logger.debug("Bulk time interval: " + it.getIntervalInMilliseconds()) })
 
     Observable<BulkItemResponse> responses = bulkIndex(index, type, HASH_ID_FUNC, connectable.map({ mapper.writeValueAsString(it) }))
     responses.subscribe()
 
+    Observable zipped = Observable.zip(original, responses, { o, r -> [o, r] })
+
     return Observable.create({ observer ->
-      Subscription s = Observable.zip(connectable, responses, { c, r ->
-        [c, r]
-      }).subscribe(observer)
+      Subscription s = zipped.subscribe(observer)
       connectable.connect()
       return s
     })
@@ -74,7 +77,9 @@ class ElasticSearchDAO {
       })
       .doOnError({ logger.error("Error performing bulk index.") })
       .finallyDo({ client.close() })
-      .finallyDo({ logger.debug("Done performing bulk index.") })
+      .finallyDo({
+        logger.debug("Done performing bulk index.")
+      })
   }
 
   private static final RANDOM_ID_FUNC = { UUID.randomUUID() }
