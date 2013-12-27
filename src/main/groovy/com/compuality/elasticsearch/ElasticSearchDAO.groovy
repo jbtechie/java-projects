@@ -1,8 +1,10 @@
 package com.compuality.elasticsearch
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.google.inject.Provider
 import org.elasticsearch.action.bulk.BulkItemResponse
+import org.elasticsearch.action.bulk.BulkRequestBuilder
 import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.client.Client
@@ -55,12 +57,16 @@ class ElasticSearchDAO {
       .doOnError({ logger.error(it) })
       .finallyDo({ client.close() })
       .finallyDo({ logger.debug('Done') })
-      .reduce([objects:[], builder:client.prepareBulk()], { result, objectAndRequest ->
-        result.objects.add(objectAndRequest.object); result.builder.add(objectAndRequest.request); result
-      })
-      .mapMany({ result ->
-        BulkResponse bulkResponse = result.builder.execute().actionGet()
-        return Observable.zip(Observable.from(result.objects), Observable.from(bulkResponse.getItems()), { object, item ->
+      .buffer(1000)
+      .mapMany({ bufferedObjectAndRequests ->
+        List objects = []
+        BulkRequestBuilder bulkBuilder = client.prepareBulk()
+        bufferedObjectAndRequests.each {
+          objects.add(it.object)
+          bulkBuilder.add(it.request)
+        }
+        BulkResponse bulkResponse = bulkBuilder.execute().actionGet()
+        return Observable.zip(Observable.from(objects), Observable.from(bulkResponse.getItems()), { object, item ->
           return [object:object, response:item]
         })
       })
