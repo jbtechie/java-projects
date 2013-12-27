@@ -2,16 +2,13 @@ package com.compuality.elasticsearch
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.google.inject.Provider
-import org.elasticsearch.action.bulk.BulkRequestBuilder
+import org.elasticsearch.action.bulk.BulkItemResponse
+import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.client.Client
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
-import rx.util.functions.Action0
-import rx.util.functions.Action1
-import rx.util.functions.Func1
-import rx.util.functions.Func2
 
 class ElasticSearchDAO {
 
@@ -30,47 +27,47 @@ class ElasticSearchDAO {
     Client client = clientProvider.get()
 
     Observable<IndexRequestBuilder> requests = documents.map({ client.prepareIndex(index, type)
-                                                                     .setSource(it) } as Func1)
+                                                                     .setSource(it) })
 
-    bulkIndex(client, requests).mapMany({ Observable.from(it.getItems()) } as Func1)
+    bulkIndex(requests).mapMany({ Observable.from(it.getItems()) })
   }
 
   void addObjects(String index, String type, Observable<Object> objects) {
-    addDocuments(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
+    addDocuments(index, type, objects.map({ mapper.writeValueAsString(it) }))
   }
 
   void addDocumentsWithHashId(String index, String type, Observable<String> documents) {
     Client client = clientProvider.get()
 
-    Observable<IndexRequestBuilder> requests = documents.map({ client.prepareIndex(index, type)
+    Observable objectAndRequests = documents.map({ [object:it, request:client.prepareIndex(index, type)
                                                                      .setSource(it)
-                                                                     .setId(UUID.nameUUIDFromBytes(it.bytes).toString()) } as Func1)
-    bulkIndex(client, requests).subscribe()
+                                                                     .setId(UUID.nameUUIDFromBytes(it.bytes).toString())] })
+    bulkIndex(objectAndRequests).subscribe({ logger.debug(it.object.toString()) })
   }
 
   void addObjectsWithHashId(String index, String type, Observable<Object> objects) {
-    addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
+    addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) }))
   }
 
-  public Observable bulkIndex(Observable<Object> requests) {
+  public Observable<BulkIndexResult> bulkIndex(Observable objectAndRequests) {
     Client client = clientProvider.get()
-    return requests.synchronize()
-      .doOnError({ logger.error(it) } as Action1)
-      .finallyDo({ client.close() } as Action0)
-      .finallyDo({ logger.debug('Done') } as Action0)
-      .reduce([objects:[], builder:client.prepareBulk()], { bulkResult, request ->
-          bulkResult.objects.add(request); bulkResult.builder.add(request); bulkResult
-      } as Func2)
-      .map({ bulkResult -> bulkResult.response = bulkResult.builder.execute().actionGet(); bulkResult } as Func1)
-      .mapMany({ bulkResult ->
-        Observable.zip(Observable.from(bulkResult.objects), Observable.from(bulkResult.response.getItems()), { objects, items ->
-          [objects:objects, items:items]
-        } as Func2)
+    return objectAndRequests.synchronize()
+      .doOnError({ logger.error(it) })
+      .finallyDo({ client.close() })
+      .finallyDo({ logger.debug('Done') })
+      .reduce([objects:[], builder:client.prepareBulk()], { result, objectAndRequest ->
+        result.objects.add(objectAndRequest.object); result.builder.add(objectAndRequest.request); result
+      })
+      .mapMany({ result ->
+        BulkResponse bulkResponse = result.builder.execute().actionGet()
+        return Observable.zip(Observable.from(result.objects), Observable.from(bulkResponse.getItems()), { object, item ->
+          return [object:object, response:item]
+        })
       })
   }
 
   static class BulkIndexResult {
-    List<Object> objects = []
-    BulkRequestBuilder builder
+    String object
+    BulkItemResponse reponse
   }
 }
