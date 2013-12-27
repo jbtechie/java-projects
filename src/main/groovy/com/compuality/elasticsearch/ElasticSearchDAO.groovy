@@ -39,34 +39,29 @@ class ElasticSearchDAO {
   }
 
   void addDocumentsWithHashId(String index, String type, Observable<String> documents) {
-    Client client = clientProvider.get()
-
-    Observable objectAndRequests = documents.map({ [object:it, request:client.prepareIndex(index, type)
-                                                                     .setSource(it)
-                                                                     .setId(UUID.nameUUIDFromBytes(it.bytes).toString())] })
-    bulkIndex(objectAndRequests).subscribe({ logger.debug(it.object.toString()) })
+    bulkIndex(index, type, documents).subscribe({ logger.debug(it.object.toString()) })
   }
 
   void addObjectsWithHashId(String index, String type, Observable<Object> objects) {
     addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) }))
   }
 
-  public Observable<BulkIndexResult> bulkIndex(Observable objectAndRequests) {
+  public Observable<BulkIndexResult> bulkIndex(String index, String type, Observable<String> documents) {
     Client client = clientProvider.get()
-    return objectAndRequests.synchronize()
+    return documents.synchronize()
       .doOnError({ logger.error(it) })
       .finallyDo({ client.close() })
       .finallyDo({ logger.debug('Done') })
       .buffer(1000)
-      .mapMany({ bufferedObjectAndRequests ->
-        List objects = []
+      .mapMany({ documentBuffer ->
         BulkRequestBuilder bulkBuilder = client.prepareBulk()
-        bufferedObjectAndRequests.each {
-          objects.add(it.object)
-          bulkBuilder.add(it.request)
+        documentBuffer.each {
+          bulkBuilder.add(client.prepareIndex(index, type)
+                                .setSource(it)
+                                .setId(UUID.nameUUIDFromBytes(it.bytes).toString()))
         }
         BulkResponse bulkResponse = bulkBuilder.execute().actionGet()
-        return Observable.zip(Observable.from(objects), Observable.from(bulkResponse.getItems()), { object, item ->
+        return Observable.zip(Observable.from(documentBuffer), Observable.from(bulkResponse.getItems()), { object, item ->
           return [object:object, response:item]
         })
       })
