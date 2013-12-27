@@ -18,13 +18,13 @@ configurations {
 }
 
 dependencies {
-  compile 'org.codehaus.groovy:groovy-all:2.1.8'
+  compile 'org.codehaus.groovy:groovy-all:2.2.1'
   compile 'com.yammer.dropwizard:dropwizard-core:0.6.2'
   compile 'com.yammer.dropwizard:dropwizard-views:0.6.2'
   compile 'com.sun.jersey:jersey-client:1.17.1'
   compile 'com.google.inject:guice:3.0'
   compile 'org.elasticsearch:elasticsearch:0.90.8'
-  compile 'com.netflix.rxjava:rxjava-core:0.15.1'
+  compile 'com.netflix.rxjava:rxjava-groovy:0.15.1'
 
   js group: 'jquery', name: 'jquery', version: '1.6.4', classifier: 'min', ext: "js"
 //  js name: 'g.raphael', version: '0.51', classifier: 'min', ext: "js"

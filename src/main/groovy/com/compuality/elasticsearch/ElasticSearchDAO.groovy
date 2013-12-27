@@ -3,7 +3,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.google.inject.Provider
 import org.elasticsearch.action.bulk.BulkRequestBuilder
-import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.index.IndexRequestBuilder
 import org.elasticsearch.client.Client
 import org.slf4j.Logger
@@ -53,16 +52,24 @@ class ElasticSearchDAO {
     addDocumentsWithHashId(index, type, objects.map({ mapper.writeValueAsString(it) } as Func1))
   }
 
-  private static Observable<BulkResponse> bulkIndex(Client client, Observable<IndexRequestBuilder> requests) {
+  public Observable bulkIndex(Observable<Object> requests) {
+    Client client = clientProvider.get()
     return requests.synchronize()
       .doOnError({ logger.error(it) } as Action1)
       .finallyDo({ client.close() } as Action0)
       .finallyDo({ logger.debug('Done') } as Action0)
-      .reduce([objects:[], builder:client.prepareBulk()], { bulkResult, request -> bulkResult.builder.add(request) } as Func2)
-      .map({ builder -> builder.execute().actionGet() } as Func1)
+      .reduce([objects:[], builder:client.prepareBulk()], { bulkResult, request ->
+          bulkResult.objects.add(request); bulkResult.builder.add(request); bulkResult
+      } as Func2)
+      .map({ bulkResult -> bulkResult.response = bulkResult.builder.execute().actionGet(); bulkResult } as Func1)
+      .mapMany({ bulkResult ->
+        Observable.zip(Observable.from(bulkResult.objects), Observable.from(bulkResult.response.getItems()), { objects, items ->
+          [objects:objects, items:items]
+        } as Func2)
+      })
   }
 
-  static class AddResult {
+  static class BulkIndexResult {
     List<Object> objects = []
     BulkRequestBuilder builder
   }
