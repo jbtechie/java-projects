@@ -6,12 +6,12 @@ import com.compuality.dropwizard.views.ViewResource
 import com.google.inject.AbstractModule
 import com.yammer.dropwizard.config.Environment
 
-class GroovyModule extends AbstractModule {
+class DropwizardModule extends AbstractModule {
 
-  def config
-  def env
+  private final ServerConfiguration config
+  private final Environment env
 
-  GroovyModule(ServerConfiguration config, Environment env) {
+  DropwizardModule(ServerConfiguration config, Environment env) {
     this.config = config
     this.env = env
   }

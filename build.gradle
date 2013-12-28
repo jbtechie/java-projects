@@ -1,7 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'application'
 
-mainClassName = 'com.compuality.dropwizard.GroovyService'
+mainClassName = 'com.compuality.dropwizard.MainService'
 
 repositories {
   mavenCentral()
