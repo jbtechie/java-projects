@@ -5,7 +5,6 @@ import com.compuality.experiment.ExperimentReport.GenerationReport
 import com.compuality.experiment.ExperimentReport.LifeReport
 import com.google.inject.Inject
 import rx.Observable
-import rx.Observable.OnSubscribeFunc
 
 class ElasticSearchExperimentReportDAO implements ExperimentReport.DAO {
 
@@ -40,28 +39,8 @@ class ElasticSearchExperimentReportDAO implements ExperimentReport.DAO {
   }
 
   @Override
-  Observable<ExperimentReport> createExperiments(Observable<CreateRequest> request) {
-    def reports = request.cast(ExperimentReport)
-    def o = Observable.create({ observer ->
-      return reports.subscribe(new rx.Observer<ExperimentReport>() {
-        @Override
-        void onCompleted() {
-          observer.onCompleted()
-        }
-
-        @Override
-        void onError(Throwable e) {
-          observer.onError(e)
-        }
-
-        @Override
-        void onNext(ExperimentReport arg) {
-          logger.debug()
-          observer.onNext()
-        }
-      })
-    } as OnSubscribeFunc)
-    dao.addObjects(INDEX, TYPE, request)
+  Observable<ExperimentReport> createExperiments(Observable<CreateRequest> requests) {
+    dao.addObjects(INDEX, TYPE, requests)
   }
 
   @Override
