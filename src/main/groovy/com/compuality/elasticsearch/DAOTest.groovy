@@ -11,7 +11,7 @@ class DAOTest {
 
   @Inject
   DAOTest(ElasticSearchDAO dao) {
-    dao.addObjectsWithHashIdAndTime('experiments', 'exp',
+    dao.addObjectsWithHashId('experiments', 'exp',
       Observable.<Map>from([ [label:1], [label:2], [label:4]]))
         .subscribe({ logger.debug("add response: " + it.toString()) })
   }

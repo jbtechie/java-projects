@@ -1,4 +1,5 @@
 package com.compuality.elasticsearch
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.google.inject.Provider
@@ -9,8 +10,6 @@ import org.elasticsearch.client.Client
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
-import rx.Subscription
-import rx.observables.ConnectableObservable
 import rx.util.functions.Func1
 
 class ElasticSearchDAO {
@@ -21,48 +20,33 @@ class ElasticSearchDAO {
   private ObjectMapper mapper
 
   @Inject
-  ElasticSearchDAO(Provider<Client> clientProvider, ObjectMapper mapper) {
+  ElasticSearchDAO(Provider<Client> clientProvider, ObjectMapper mapper, ElasticSearchConfiguration config) {
     this.clientProvider = clientProvider
     this.mapper = mapper
   }
 
   Observable<BulkItemResponse> addDocuments(String index, String type, Observable<String> documents) {
-    return bulkIndex(index, type, RANDOM_ID_FUNC, documents).subscribe()
+    return bulkIndex(index, type, RANDOM_ID_FUNC, documents).map({ it.bulkItemResponse })
   }
 
   Observable<BulkItemResponse> addObjects(String index, String type, Observable<Object> objects) {
-    return bulkIndex(index, type, RANDOM_ID_FUNC, objects.map({ mapper.writeValueAsString(it) }))
+    return bulkIndex(index, type, RANDOM_ID_FUNC, objects.map({ mapper.writeValueAsString(it) })).map({ it.bulkItemResponse })
   }
 
   Observable<BulkItemResponse> addDocumentsWithHashId(String index, String type, Observable<String> documents) {
-    return bulkIndex(index, type, HASH_ID_FUNC, documents)
+    return bulkIndex(index, type, HASH_ID_FUNC, documents).map({ it.bulkItemResponse })
   }
 
   Observable<BulkItemResponse> addObjectsWithHashId(String index, String type, Observable<Object> objects) {
-    return bulkIndex(index, type, HASH_ID_FUNC, objects.map({ mapper.writeValueAsString(it) }))
+    return bulkIndex(index, type, HASH_ID_FUNC, objects.map({ mapper.writeValueAsString(it) })).map({ it.bulkItemResponse })
   }
 
-  Observable addObjectsWithHashIdAndTime(String index, String type, Observable<Object> objects) {
-    ConnectableObservable<Object> connectable = objects.publish()
-
-    Observable original = connectable.map({ it })
-    original.subscribe()
-
-//    connectable.timeInterval().subscribe({ logger.debug("Bulk time interval: " + it.getIntervalInMilliseconds()) })
-
-    Observable<BulkItemResponse> responses = bulkIndex(index, type, HASH_ID_FUNC, connectable.map({ mapper.writeValueAsString(it) }))
-    responses.subscribe()
-
-    Observable zipped = Observable.zip(original, responses, { o, r -> [o, r] })
-
-    return Observable.create({ observer ->
-      Subscription s = zipped.subscribe(observer)
-      connectable.connect()
-      return s
-    })
+  private static class BulkIndexResult {
+    String document
+    BulkItemResponse bulkItemResponse
   }
 
-  private Observable<BulkItemResponse> bulkIndex(String index, String type, Func1<String, UUID> idFunc, Observable<String> documents) {
+  private Observable<BulkIndexResult> bulkIndex(String index, String type, Func1<String, UUID> idFunc, Observable<String> documents) {
     Client client = clientProvider.get()
     return documents.buffer(1000)
       .mapMany({ documentBuffer ->
@@ -73,13 +57,13 @@ class ElasticSearchDAO {
                                 .setId(idFunc.call(it).toString()))
         }
         BulkResponse bulkResponse = bulkBuilder.execute().actionGet()
-        return Observable.from(bulkResponse.getItems())
+        return Observable.zip(Observable.from(documentBuffer), Observable.from(bulkResponse.getItems()), { d, i ->
+          return [document:d, bulkItemResponse:i]
+        })
       })
-      .doOnError({ logger.error("Error performing bulk index.") })
+      .doOnError({ logger.error("Error performing bulk index.", it) })
       .finallyDo({ client.close() })
-      .finallyDo({
-        logger.debug("Done performing bulk index.")
-      })
+      .finallyDo({ logger.debug("Done performing bulk index.") })
   }
 
   private static final RANDOM_ID_FUNC = { UUID.randomUUID() }

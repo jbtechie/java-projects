@@ -1,9 +1,9 @@
 package com.compuality.elasticsearch
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.io.Files
 import com.google.inject.AbstractModule
-import com.google.inject.Provider
+import com.google.inject.Provides
+import com.google.inject.Singleton
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.common.settings.Settings
@@ -17,13 +17,22 @@ class ElasticSearchModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    String source = Files.toString(new File("elasticsearch.yml"), StandardCharsets.UTF_8)
-    Settings settings = ImmutableSettings.builder().loadFromSource(source).build()
-    Node node = nodeBuilder().settings(settings).node()
-    bind(Client).toProvider({ node.client() } as Provider)
 //    bind(ClientTest).asEagerSingleton()
     bind(ObjectMapper).toInstance(new ObjectMapper())
     bind(ElasticSearchDAO)
     bind(DAOTest).asEagerSingleton()
+  }
+
+  @Provides
+  @Singleton
+  Node getNode(ElasticSearchConfiguration config) {
+    String source = Files.toString(new File(config.configFile), StandardCharsets.UTF_8)
+    Settings settings = ImmutableSettings.builder().loadFromSource(source).build()
+    return nodeBuilder().settings(settings).node()
+  }
+
+  @Provides
+  Client getClient(Node node) {
+    return node.client()
   }
 }
