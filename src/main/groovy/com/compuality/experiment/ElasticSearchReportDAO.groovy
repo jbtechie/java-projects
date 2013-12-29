@@ -5,9 +5,13 @@ import com.compuality.experiment.ExperimentReport.DAO
 import com.compuality.experiment.ExperimentReport.GenerationReport
 import com.compuality.experiment.ExperimentReport.LifeReport
 import com.google.inject.Inject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import rx.Observable
 
 class ElasticSearchReportDAO implements DAO {
+
+  private static final Logger logger = LoggerFactory.getLogger(ElasticSearchReportDAO)
 
   private final ElasticSearchDAO esDao
 
@@ -28,11 +32,13 @@ class ElasticSearchReportDAO implements DAO {
 
   @Override
   void loadExperiments(Observable<ExperimentReport> reports) {
-    def prepared = reports.doOnEach({
-        loadGenerations(it.generations)
-    })
-
-    esDao.addObjects('experiments','experiment', prepared).subscribe()
+    def split = reports.publish()
+    esDao.addObjects('experiments','experiment', split).subscribe()
+    split.doOnEach({
+      logger.debug('loading gens on each exp')
+      loadGenerations(it.generations)
+    }).subscribe()
+    split.connect()
   }
 
   @Override
@@ -41,7 +47,7 @@ class ElasticSearchReportDAO implements DAO {
     esDao.addObjects('experiments','generation', split).subscribe()
     split.doOnEach({
       loadLives(it.lives)
-    })
+    }).subscribe()
     split.connect()
   }
 
