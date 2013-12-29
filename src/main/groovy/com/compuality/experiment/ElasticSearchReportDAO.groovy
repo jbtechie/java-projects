@@ -28,12 +28,11 @@ class ElasticSearchReportDAO implements DAO {
 
   @Override
   void loadExperiments(Observable<ExperimentReport> reports) {
-    def split = reports.publish()
-    esDao.addObjects('experiments','experiment', split).subscribe()
-    split.doOnEach({
+    def prepared = reports.doOnEach({
         loadGenerations(it.generations)
     })
-    split.connect()
+
+    esDao.addObjects('experiments','experiment', prepared).subscribe()
   }
 
   @Override
