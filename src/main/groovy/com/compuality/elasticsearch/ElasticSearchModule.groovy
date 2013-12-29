@@ -17,10 +17,10 @@ class ElasticSearchModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(ClientTest).asEagerSingleton()
+//    bind(ClientTest).asEagerSingleton()
     bind(ObjectMapper).toInstance(new ObjectMapper())
     bind(ElasticSearchDAO)
-    bind(DAOTest).asEagerSingleton()
+//    bind(DAOTest).asEagerSingleton()
   }
 
   @Provides
