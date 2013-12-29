@@ -1,18 +1,25 @@
 package com.compuality.experiment
 
+import com.compuality.rx.Observables
+import com.fasterxml.jackson.annotation.JsonIgnore
 import rx.Observable
 
 class ExperimentReport {
 
   UUID id
   Map<String, Object> args
-  Observable<GenerationReport> generations
+
+  @JsonIgnore
+  Observable<GenerationReport> generations = Observables.complete
 
   static class GenerationReport {
 
     UUID experimentId
     long index
-    Observable<LifeReport> lives
+    double totalError
+
+    @JsonIgnore
+    Observable<LifeReport> lives = Observables.complete
   }
 
   static class LifeReport {
@@ -29,5 +36,9 @@ class ExperimentReport {
     ExperimentReport get(UUID id)
 
     void loadExperiments(Observable<ExperimentReport> reports)
+
+    void loadGenerations(Observable<GenerationReport> reports)
+
+    void loadLives(Observable<LifeReport> reports)
   }
 }

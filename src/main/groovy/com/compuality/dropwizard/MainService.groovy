@@ -1,6 +1,7 @@
 package com.compuality.dropwizard
 import com.compuality.ServerConfiguration
 import com.compuality.elasticsearch.ElasticSearchModule
+import com.compuality.experiment.ExperimentModule
 import com.google.inject.Guice
 import com.google.inject.Module
 import com.yammer.dropwizard.Service
@@ -11,7 +12,8 @@ import com.yammer.dropwizard.views.ViewBundle
 
 class MainService extends Service<ServerConfiguration> {
 
-    private List<Class<Module>> moduleClasses = [ ElasticSearchModule ]
+    private List<Module> modules = [ new ElasticSearchModule(),
+                                     new ExperimentModule() ]
 
     @Override
     void initialize(Bootstrap<ServerConfiguration> bootstrap) {
@@ -21,7 +23,6 @@ class MainService extends Service<ServerConfiguration> {
 
     @Override
     void run(ServerConfiguration config, Environment env) throws Exception {
-      List<Module> modules = moduleClasses*.constructors[0]*.newInstance()
       modules.add(new DropwizardModule(config, env))
       Guice.createInjector(modules)
     }
