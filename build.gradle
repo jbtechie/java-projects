@@ -26,6 +26,8 @@ dependencies {
   compile 'org.elasticsearch:elasticsearch:0.90.8'
   compile 'com.netflix.rxjava:rxjava-groovy:0.15.1'
 
+  testCompile 'junit:junit:4.10'
+
   js group: 'jquery', name: 'jquery', version: '1.6.4', classifier: 'min', ext: "js"
 //  js name: 'g.raphael', version: '0.51', classifier: 'min', ext: "js"
 }

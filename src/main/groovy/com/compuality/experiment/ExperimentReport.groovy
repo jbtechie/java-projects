@@ -1,5 +1,5 @@
 package com.compuality.experiment
-import com.compuality.rx.Observables
+
 import com.fasterxml.jackson.annotation.JsonIgnore
 import rx.Observable
 
@@ -9,11 +9,10 @@ class ExperimentReport {
   Map<String, Object> args
 
   @JsonIgnore
-  Observable<GenerationReport> generations = Observables.complete
+  Observable<GenerationReport> generations = Observable.empty()
 
   static class GenerationReport {
 
-    @Id
     long index
 
     Map<Object, Class> edges
@@ -21,7 +20,7 @@ class ExperimentReport {
     double totalError
 
     @JsonIgnore
-    Observable<LifeReport> lives = Observables.complete
+    Observable<LifeReport> lives = Observable.empty()
   }
 
   static class LifeReport {

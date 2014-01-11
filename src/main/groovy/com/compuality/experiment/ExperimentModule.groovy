@@ -10,6 +10,6 @@ class ExperimentModule extends AbstractModule {
   protected void configure() {
     bind(ElasticSearchReportDAO).in(Scopes.SINGLETON)
 
-    bind(ExperimentSandbox).asEagerSingleton()
+//    bind(ExperimentSandbox).asEagerSingleton()
   }
 }
