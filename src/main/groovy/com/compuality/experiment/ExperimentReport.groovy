@@ -1,5 +1,4 @@
 package com.compuality.experiment
-
 import com.compuality.rx.Observables
 import com.fasterxml.jackson.annotation.JsonIgnore
 import rx.Observable
@@ -14,8 +13,11 @@ class ExperimentReport {
 
   static class GenerationReport {
 
-    UUID experimentId
+    @Id
     long index
+
+    Map<Object, Class> edges
+
     double totalError
 
     @JsonIgnore
@@ -24,8 +26,11 @@ class ExperimentReport {
 
   static class LifeReport {
 
-    UUID experimentId
-    long generationIndex
+    UUID id
+
+    Map<Object, Class> edges
+
+    Set<Object> keys
     double error
   }
 

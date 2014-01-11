@@ -21,7 +21,7 @@ class ElasticSearchReportDAO implements DAO {
   }
 
   @Override
-  rx.Observable<ExperimentReport> getAll() {
+  Observable<ExperimentReport> getAll() {
     return null
   }
 
