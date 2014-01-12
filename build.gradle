@@ -23,6 +23,7 @@ dependencies {
   compile 'com.yammer.dropwizard:dropwizard-views:0.6.2'
   compile 'com.sun.jersey:jersey-client:1.17.1'
   compile 'com.google.inject:guice:3.0'
+  compile 'com.google.inject.extensions:guice-grapher:3.0'
   compile 'org.elasticsearch:elasticsearch:0.90.8'
   compile 'com.netflix.rxjava:rxjava-groovy:0.15.1'
 

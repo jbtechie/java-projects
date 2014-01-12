@@ -1,8 +1,10 @@
 package com.compuality.dropwizard
+
 import com.compuality.ServerConfiguration
 import com.compuality.elasticsearch.ElasticSearchModule
 import com.compuality.experiment.ExperimentModule
 import com.google.inject.Guice
+import com.google.inject.Injector
 import com.google.inject.Module
 import com.yammer.dropwizard.Service
 import com.yammer.dropwizard.assets.AssetsBundle
@@ -24,7 +26,8 @@ class MainService extends Service<ServerConfiguration> {
     @Override
     void run(ServerConfiguration config, Environment env) throws Exception {
       modules.add(new DropwizardModule(config, env))
-      Guice.createInjector(modules)
+      Injector injector = Guice.createInjector(modules)
+//      DependencyGrapher.graphGood('dependencies.dot', injector)
     }
 
     public static void main(String[] args) throws Exception {
