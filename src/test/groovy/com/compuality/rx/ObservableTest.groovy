@@ -1,4 +1,5 @@
 package com.compuality.rx
+
 import com.google.common.collect.Lists
 import com.yammer.metrics.Metrics
 import com.yammer.metrics.core.Meter
@@ -6,7 +7,9 @@ import com.yammer.metrics.core.Timer
 import com.yammer.metrics.core.TimerContext
 import org.junit.Test
 import rx.Observable
+import rx.concurrency.Schedulers
 
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -57,7 +60,7 @@ class ObservableTest {
 //        .subscribe()
 //  }
 
-  @Test
+//  @Test
   void testMultiThreadIterableMapMany() {
     List<Observable<Integer>> processors = processors()
 
@@ -73,7 +76,7 @@ class ObservableTest {
         .subscribe()
   }
 
-  @Test
+//  @Test
   void testSingleThreadTheirs() {
     Iterable<Observable<Integer>> processors = processors()
 
@@ -98,13 +101,16 @@ class ObservableTest {
     TimerContext time = timer.time()
 
     Observable<?> o = Observable.from(processors).parallel({
-          return it.mapMany({ it }).doOnEach({ meter.mark() })
-              .doOnError({ println "error: ${it}"})
-              .count()
-        })
-        .reduce(0, { a, b -> a + b })
+          println 'parallelizing'
+          return it.mapMany({ println 'mapping'; it })
+        }, Schedulers.executor(Executors.newFixedThreadPool(4)))
+        .doOnEach({ meter.mark() })
+        .doOnError({ println "error: ${it}"; it.printStackTrace() })
+        .count()
+//        .reduce(0, { a, b -> a + b })
         .doOnEach({ time.stop(); println "testMultiThreadTheirs          processed ${it} items in ${timer.mean()} s at an average of ${meter.meanRate()} items/s"})
 
+//    o.subscribe()
     subscribeAndWait(o)
 
 //    Observable.parallelMerge(Observable.from(processors), 1, Schedulers.threadPoolForIO())
@@ -116,6 +122,8 @@ class ObservableTest {
 //              .subscribe()
 //        })
 //        .subscribe()
+
+//    Thread.sleep(3000)
   }
 
   static void subscribeAndWait(Observable<?> observable) {
@@ -142,11 +150,11 @@ class ObservableTest {
   private static Iterable<Observable<Integer>> processors() {
     int numThreads = 8
     int min = 0
-    int max = 1e3 * 1 * 1 / numThreads
+    int max = 1e6 * 60 * 10 / numThreads
 
     List<Observable<Integer>> processors = Lists.newArrayList()
     (1..numThreads).each {
-      def p = Observable.range(min, max).map({ Thread.sleep(1); it })
+      def p = Observable.range(min, max).mapMany({ Observable.from(it) })//.map({ Thread.sleep(1); it })
 //      p = Observable.create(new IterableMapMany(p, { ImmutableList.of(it) }))
       processors.add(p)
     }
