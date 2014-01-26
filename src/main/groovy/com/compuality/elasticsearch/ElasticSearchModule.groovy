@@ -20,7 +20,8 @@ class ElasticSearchModule extends AbstractModule {
 //    bind(ClientTest).asEagerSingleton()
     bind(ObjectMapper).toInstance(new ObjectMapper())
     bind(ElasticSearchDAO)
-    bind(DAOTest).asEagerSingleton()
+//    bind(DAOTest).asEagerSingleton()
+    bind(ElasticSearchBenchmark).asEagerSingleton()
   }
 
   @Provides

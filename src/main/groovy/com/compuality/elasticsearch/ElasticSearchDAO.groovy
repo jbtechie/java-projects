@@ -52,7 +52,7 @@ class ElasticSearchDAO {
 
   private Observable<BulkIndexResult> bulkIndex(String index, String type, Func1<String, UUID> idFunc, Observable<String> documents) {
     Client client = clientProvider.get()
-    return documents.buffer(1000)
+    return documents.buffer(10000)
       .map({ documentBuffer ->
         BulkRequestBuilder bulkBuilder = client.prepareBulk()
         documentBuffer.each {
