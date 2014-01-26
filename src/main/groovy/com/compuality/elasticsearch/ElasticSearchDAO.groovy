@@ -3,6 +3,9 @@ package com.compuality.elasticsearch
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.google.inject.Provider
+import com.yammer.metrics.Metrics
+import com.yammer.metrics.core.Timer
+import com.yammer.metrics.core.TimerContext
 import org.elasticsearch.action.bulk.BulkItemResponse
 import org.elasticsearch.action.bulk.BulkRequestBuilder
 import org.elasticsearch.action.bulk.BulkResponse
@@ -16,8 +19,9 @@ class ElasticSearchDAO {
 
   private static Logger logger = LoggerFactory.getLogger(ElasticSearchDAO)
 
-  private Provider<Client> clientProvider
-  private ObjectMapper mapper
+  private final Provider<Client> clientProvider
+  private final ObjectMapper mapper
+  private final Timer indexTimer = Metrics.newTimer(ElasticSearchDAO, 'index')
 
   @Inject
   ElasticSearchDAO(Provider<Client> clientProvider, ObjectMapper mapper, ElasticSearchConfiguration config) {
@@ -25,8 +29,8 @@ class ElasticSearchDAO {
     this.mapper = mapper
   }
 
-  Observable<BulkItemResponse> addDocuments(String index, String type, Observable<String> documents) {
-    return bulkIndex(index, type, RANDOM_ID_FUNC, documents).map({ it.bulkItemResponse })
+  Observable<BulkResponse> addDocuments(String index, String type, Observable<String> documents) {
+    return bulkIndex(index, type, RANDOM_ID_FUNC, documents)
   }
 
   Observable<BulkItemResponse> addObjects(String index, String type, Observable<Object> objects) {
@@ -49,17 +53,17 @@ class ElasticSearchDAO {
   private Observable<BulkIndexResult> bulkIndex(String index, String type, Func1<String, UUID> idFunc, Observable<String> documents) {
     Client client = clientProvider.get()
     return documents.buffer(1000)
-      .mapMany({ documentBuffer ->
+      .map({ documentBuffer ->
         BulkRequestBuilder bulkBuilder = client.prepareBulk()
         documentBuffer.each {
           bulkBuilder.add(client.prepareIndex(index, type)
                                 .setSource(it)
                                 .setId(idFunc.call(it).toString()))
         }
+        TimerContext time = indexTimer.time()
         BulkResponse bulkResponse = bulkBuilder.execute().actionGet()
-        return Observable.zip(Observable.from(documentBuffer), Observable.from(bulkResponse.getItems()), { d, i ->
-          return [document:d, bulkItemResponse:i]
-        })
+        time.stop()
+        return bulkResponse
       })
       .doOnError({ logger.error("Error performing bulk index.", it) })
       .finallyDo({ client.close() })
