@@ -1,12 +1,22 @@
 package com.compuality.elasticsearch
 
+import com.google.common.util.concurrent.AtomicDouble
+import com.yammer.metrics.Metrics
+import com.yammer.metrics.core.Timer
+import com.yammer.metrics.core.TimerContext
 import org.elasticsearch.action.bulk.BulkRequestBuilder
 import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.client.Client
+import org.elasticsearch.client.Requests
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import javax.inject.Inject
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 public class ElasticSearchBenchmark {
 
@@ -15,32 +25,51 @@ public class ElasticSearchBenchmark {
   @Inject
   public ElasticSearchBenchmark(Client client) {
 
-    println randomAlphaString(10)
+    client.admin().indices().delete(Requests.deleteIndexRequest("experiments")).actionGet()
 
-    long totalLength = 0
-    double totalTime = 0
+    ExecutorService executor = Executors.newFixedThreadPool(8)
 
-    (1..10).each {
-      BulkRequestBuilder bulkBuilder = client.prepareBulk()
-      (1..1e5).each {
-        bulkBuilder.add(client.prepareIndex('experiment', 'benchmark')
-            .setSource(/{ "value": "${randomAlphaString(10)}" }/.toString())
-            .setId(RANDOM_ID_FUNC().toString()))
-      }
+    AtomicDouble serialTime = new AtomicDouble()
+    AtomicLong count = new AtomicLong()
 
-      BulkResponse bulkResponse = bulkBuilder.execute().actionGet()
+    Timer timer = Metrics.newTimer(ElasticSearchBenchmark, 'totalLoadTime', TimeUnit.SECONDS, TimeUnit.SECONDS)
+    TimerContext time = timer.time()
 
-      totalLength += bulkResponse.items.length
-      totalTime += bulkResponse.tookInMillis / 1000.0
+    List<Callable> callables = (1..100).collect {
+      return {
+        BulkRequestBuilder bulkBuilder = client.prepareBulk()
+        (1..1e4).each {
+          bulkBuilder.add(client.prepareIndex('experiments', 'speedTest')
+              .setSource(/{ "value": "${randomAlphaString(100)}", "outer":{ "inner" : 3 } }/.toString())
+              .setId(RANDOM_ID_FUNC().toString()))
+        }
 
-      if(bulkResponse.hasFailures()) {
-        throw new RuntimeException('Bulk load had errors')
-      } else {
-        log.debug(/Partial load of ${String.format('%.1e', (double)bulkResponse.items.length)} documents in ${bulkResponse.tookInMillis/1000.0} s at ${(double)bulkResponse.items.length/(bulkResponse.tookInMillis/1000.0)} per second s/)
+        BulkResponse bulkResponse = bulkBuilder.execute().actionGet()
+
+        serialTime.addAndGet(bulkResponse.tookInMillis/1e3)
+        count.addAndGet(bulkResponse.items.length)
+
+        if(bulkResponse.hasFailures()) {
+          throw new RuntimeException('Bulk load had errors')
+        } else {
+          log.debug(/Partial load of ${String.format('%.1e', (double)bulkResponse.items.length)} documents in ${bulkResponse.tookInMillis/1000.0} s at ${(double)bulkResponse.items.length/(bulkResponse.tookInMillis/1000.0)} per second s/)
+        }
       }
     }
 
-    log.debug(/Total load of ${String.format('%.1e', (double)totalLength)} documents in ${totalTime} s at ${totalLength/totalTime} per second s/)
+    executor.invokeAll(callables)
+
+    executor.shutdown()
+    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS)
+
+//    callables.each {
+//      it.call()
+//    }
+
+    time.stop()
+
+    log.debug(/Total serial load of ${String.format('%.1e', (double)count.get())} documents in ${serialTime.get()} s at ${count.get()/serialTime.get()} per s/)
+    log.debug(/Wall clock time for load was ${timer.mean()} s at ${count.get()/timer.mean()} per s/)
   }
 
   private static final RANDOM_ID_FUNC = { UUID.randomUUID() }

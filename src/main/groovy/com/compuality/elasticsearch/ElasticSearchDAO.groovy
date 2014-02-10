@@ -15,13 +15,15 @@ import org.slf4j.LoggerFactory
 import rx.Observable
 import rx.util.functions.Func1
 
+import java.util.concurrent.TimeUnit
+
 class ElasticSearchDAO {
 
   private static Logger logger = LoggerFactory.getLogger(ElasticSearchDAO)
 
   private final Provider<Client> clientProvider
   private final ObjectMapper mapper
-  private final Timer indexTimer = Metrics.newTimer(ElasticSearchDAO, 'index')
+  private final Timer indexTimer = Metrics.newTimer(ElasticSearchDAO, 'index', TimeUnit.SECONDS, TimeUnit.SECONDS)
 
   @Inject
   ElasticSearchDAO(Provider<Client> clientProvider, ObjectMapper mapper, ElasticSearchConfiguration config) {
@@ -62,6 +64,13 @@ class ElasticSearchDAO {
         }
         TimerContext time = indexTimer.time()
         BulkResponse bulkResponse = bulkBuilder.execute().actionGet()
+
+      if(bulkResponse.hasFailures()) {
+        throw new RuntimeException('Bulk load had errors')
+      } else {
+        logger.debug(/Partial load of ${String.format('%.1e', (double)bulkResponse.items.length)} documents in ${bulkResponse.tookInMillis/1000.0} s at ${(double)bulkResponse.items.length/(bulkResponse.tookInMillis/1000.0)} per second s/)
+      }
+
         time.stop()
         return bulkResponse
       })
