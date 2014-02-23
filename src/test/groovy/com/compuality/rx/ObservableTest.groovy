@@ -1,11 +1,9 @@
 package com.compuality.rx
-
 import com.google.common.collect.Lists
 import com.yammer.metrics.Metrics
 import com.yammer.metrics.core.Meter
 import com.yammer.metrics.core.Timer
 import com.yammer.metrics.core.TimerContext
-import org.junit.Test
 import rx.Observable
 import rx.concurrency.Schedulers
 
@@ -92,7 +90,7 @@ class ObservableTest {
         .subscribe()
   }
 
-  @Test
+//  @Test
   void testMultiThreadTheirs() {
     Iterable<Observable<Integer>> processors = processors()
 

@@ -1,7 +1,15 @@
 apply plugin: 'groovy'
-apply plugin: 'application'
+apply plugin: 'shadow'
 
-mainClassName = 'com.compuality.dropwizard.MainService'
+buildscript {
+  repositories {
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
+  }
+}
 
 repositories {
   mavenCentral()
@@ -31,6 +39,7 @@ dependencies {
 
   js group: 'jquery', name: 'jquery', version: '1.6.4', classifier: 'min', ext: "js"
 //  js name: 'g.raphael', version: '0.51', classifier: 'min', ext: "js"
+
 }
 
 task libs(type: Sync) {
@@ -41,4 +50,17 @@ task libs(type: Sync) {
 task fetchJs(type: Copy) {
   from configurations.js
   into "$buildDir/resources/assets/js"
+}
+
+shadow {
+  exclude 'META-INF/*.DSA'
+  exclude 'META-INF/*.RSA'
+}
+
+version = '0.12'
+
+jar {
+  manifest {
+    attributes 'Main-Class': 'com.compuality.dropwizard.MainService'
+  }
 }

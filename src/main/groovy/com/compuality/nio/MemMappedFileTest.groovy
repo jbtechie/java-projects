@@ -29,7 +29,7 @@ public class MemMappedFileTest {
         bufs[i] = fc.map(FileChannel.MapMode.READ_WRITE, 2**30 * i, Integer.MAX_VALUE)
       }
 
-      final int SAMPLES = 100000
+      final int SAMPLES = 10000
       final int COUNT = 1
       final int CHUNK_SIZE = PAGE_SIZE
 
