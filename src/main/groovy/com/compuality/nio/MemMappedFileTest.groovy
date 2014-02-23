@@ -22,12 +22,13 @@ public class MemMappedFileTest {
   @Inject
   public MemMappedFileTest() {
     FileChannel fc = (FileChannel)Files.newByteChannel(Paths.get('test.dat'), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
-//    MappedByteBuffer[] bufs = new MappedByteBuffer[100]
-//    for(int i=0; i < bufs.length; ++i) {
-//      bufs
-//    }
 
     try {
+      MappedByteBuffer[] bufs = new MappedByteBuffer[1]
+      for(long i=0; i < bufs.length; ++i) {
+        bufs[i] = fc.map(FileChannel.MapMode.READ_WRITE, 2**30 * i, Integer.MAX_VALUE)
+      }
+
       final int SAMPLES = 100000
       final int COUNT = 1
       final int CHUNK_SIZE = PAGE_SIZE
@@ -38,15 +39,13 @@ public class MemMappedFileTest {
       final long start = clock.tick()
 
       for(int i=0; i < SAMPLES; ++i) {
-        MappedByteBuffer buf = fc.map(FileChannel.MapMode.READ_WRITE, PAGE_SIZE * rand.nextInt(PAGE_SIZE), 4096**2)
-
-        testRandomWrite(buf, chunk, COUNT)
+        testRandomWrite(bufs[rand.nextInt(bufs.length)], chunk, COUNT)
       }
 
       final double duration = (clock.tick() - start)/1e9
       final int totalBytesWritten = SAMPLES * COUNT * chunk.length
 
-      log.debug('Wrote {} bytes randomly in {} seconds ({} mb/s with a chunk size of {} bytes with {} different maps, with maps along page boundaries', totalBytesWritten, duration, totalBytesWritten/1e6/duration, chunk.length, SAMPLES)
+      log.debug('Wrote {} bytes randomly in {} seconds ({} mb/s with a chunk size of {} bytes with {} different cached maps', totalBytesWritten, duration, totalBytesWritten/1e6/duration, chunk.length, SAMPLES)
 
     } finally {
       if(fc) {
