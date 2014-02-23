@@ -17,39 +17,36 @@ public class MemMappedFileTest {
 
   private static final int PAGE_SIZE = 4096
 
+  private final Random rand = new Random()
+
   @Inject
   public MemMappedFileTest() {
     FileChannel fc = (FileChannel)Files.newByteChannel(Paths.get('test.dat'), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
+//    MappedByteBuffer[] bufs = new MappedByteBuffer[100]
+//    for(int i=0; i < bufs.length; ++i) {
+//      bufs
+//    }
+
     try {
-      MappedByteBuffer buf = fc.map(FileChannel.MapMode.READ_WRITE, 0, Integer.MAX_VALUE)
+      final int SAMPLES = 100000
+      final int COUNT = 1
+      final int CHUNK_SIZE = PAGE_SIZE
 
-      final int SAMPLES = 5
+      final byte[] chunk = new byte[CHUNK_SIZE]
 
-      for(int i=0; i < SAMPLES; ++i) {
-        buf.rewind()
-        testSequentialWrite(buf, (int)(PAGE_SIZE * 8))
-      }
-      for(int i=0; i < SAMPLES; ++i) {
-        buf.rewind()
-        testSequentialWrite(buf, (int)(PAGE_SIZE * 16))
-      }
-      for(int i=0; i < SAMPLES; ++i) {
-        buf.rewind()
-        testSequentialWrite(buf, (int)(PAGE_SIZE * 32))
-      }
+      Clock clock = Clock.defaultClock()
+      final long start = clock.tick()
 
       for(int i=0; i < SAMPLES; ++i) {
-        buf.rewind()
-        testRandomWrite(buf, (int)(PAGE_SIZE * 8))
+        MappedByteBuffer buf = fc.map(FileChannel.MapMode.READ_WRITE, PAGE_SIZE * rand.nextInt(PAGE_SIZE), 4096**2)
+
+        testRandomWrite(buf, chunk, COUNT)
       }
-      for(int i=0; i < SAMPLES; ++i) {
-        buf.rewind()
-        testRandomWrite(buf, (int)(PAGE_SIZE * 16))
-      }
-      for(int i=0; i < SAMPLES; ++i) {
-        buf.rewind()
-        testRandomWrite(buf, (int)(PAGE_SIZE * 32))
-      }
+
+      final double duration = (clock.tick() - start)/1e9
+      final int totalBytesWritten = SAMPLES * COUNT * chunk.length
+
+      log.debug('Wrote {} bytes randomly in {} seconds ({} mb/s with a chunk size of {} bytes with {} different maps, with maps along page boundaries', totalBytesWritten, duration, totalBytesWritten/1e6/duration, chunk.length, SAMPLES)
 
     } finally {
       if(fc) {
@@ -58,10 +55,7 @@ public class MemMappedFileTest {
     }
   }
 
-  private static void testSequentialWrite(MappedByteBuffer buf, int chunkSize) {
-    byte[] chunk = new byte[chunkSize]
-    Random rand = new Random()
-
+  private void testSequentialWrite(MappedByteBuffer buf, int chunkSize) {
     Clock clock = Clock.defaultClock()
     final long start = clock.tick()
 
@@ -75,21 +69,20 @@ public class MemMappedFileTest {
     log.debug('Wrote {} bytes sequentially in {} seconds ({} mb/s with a chunk size of {} bytes', Integer.MAX_VALUE, duration, Integer.MAX_VALUE/1e6/duration, chunkSize)
   }
 
-  private static void testRandomWrite(MappedByteBuffer buf, int chunkSize) {
-    byte[] chunk = new byte[chunkSize]
-    Random rand = new Random()
+  private void testRandomWrite(MappedByteBuffer buf, byte[] chunk, int count=((buf.limit() - chunk.length) / chunk.length)) {
+//    byte[] chunk = new byte[chunkSize]
+//
+//    Clock clock = Clock.defaultClock()
+//    final long start = clock.tick()
 
-    Clock clock = Clock.defaultClock()
-    final long start = clock.tick()
-
-    for(int i=0; i < ((Integer.MAX_VALUE - chunkSize) / chunkSize); ++i) {
+    for(int i=0; i < count; ++i) {
       rand.nextBytes(chunk)
-      buf.position(chunkSize * rand.nextInt((int)((Integer.MAX_VALUE - chunkSize) / chunkSize)))
+      buf.position(chunk.length * rand.nextInt((int)((buf.limit() - chunk.length) / chunk.length)))
       buf.put(chunk)
     }
 
-    final double duration = (clock.tick() - start)/1e9
+//    final double duration = (clock.tick() - start)/1e9
 
-    log.debug('Wrote {} bytes randomly in {} seconds ({} mb/s with a chunk size of {} bytes', Integer.MAX_VALUE, duration, Integer.MAX_VALUE/1e6/duration, chunkSize)
+//    log.debug('Wrote {} bytes randomly in {} seconds ({} mb/s with a chunk size of {} bytes', Integer.MAX_VALUE, duration, Integer.MAX_VALUE/1e6/duration, chunkSize)
   }
 }
