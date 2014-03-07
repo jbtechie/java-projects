@@ -11,50 +11,35 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 
-public class MemMappedFileTest {
+public class MemMappedFileMapTest {
 
-  private static final Logger log = LoggerFactory.getLogger(MemMappedFileTest)
+  private static final Logger log = LoggerFactory.getLogger(MemMappedFileMapTest)
 
   private static final int PAGE_SIZE = 4096
 
   private final Random rand = new Random()
 
   @Inject
-  public MemMappedFileTest() {
+  public MemMappedFileMapTest() {
     FileChannel fc = (FileChannel)Files.newByteChannel(Paths.get('test.dat'), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
 
-    MappedByteBuffer[] bufs = new MappedByteBuffer[1]
-    for(long i=0; i < bufs.length; ++i) {
-      bufs[i] = fc.map(FileChannel.MapMode.READ_WRITE, 0, Integer.MAX_VALUE - PAGE_SIZE + 1)
-    }
-
-    final int SAMPLES = 100000
-    final int COUNT = 1
-    final int CHUNK_SIZE = PAGE_SIZE
-
-    final byte[] chunk = new byte[CHUNK_SIZE]
+    final int SAMPLES = 1000000
 
     Clock clock = Clock.defaultClock()
     final long start = clock.tick()
 
     try {
-
-      for(int i=0; i < SAMPLES; ++i) {
-        testRandomWrite(bufs[rand.nextInt(bufs.length)], chunk, COUNT)
+      for(long i=0; i < SAMPLES; ++i) {
+        fc.map(FileChannel.MapMode.READ_WRITE, rand.nextInt(256) * PAGE_SIZE, PAGE_SIZE)
       }
     } finally {
-      if(bufs) {
-        bufs.each { it.force() }
-      }
       if(fc) {
         fc.close()
       }
     }
 
     final double duration = (clock.tick() - start)/1e9
-    final int totalBytesWritten = SAMPLES * COUNT * chunk.length
-
-    log.debug('Performed {} page aligned random writes totaling {} bytes in {} seconds ({} mb/s with a chunk size of {} bytes with {} different cached maps)', SAMPLES, totalBytesWritten, duration, totalBytesWritten/1e6/duration, chunk.length, 1)
+    log.debug('Memory mapped a file {} times in {} seconds ({} m/s)', SAMPLES, duration, SAMPLES/duration)
   }
 
   private void testSequentialWrite(MappedByteBuffer buf, int chunkSize) {
