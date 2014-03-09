@@ -32,8 +32,11 @@ dependencies {
   compile 'com.sun.jersey:jersey-client:1.17.1'
   compile 'com.google.inject:guice:3.0'
   compile 'com.google.inject.extensions:guice-grapher:3.0'
-  compile 'org.elasticsearch:elasticsearch:1.0.1'
   compile 'com.netflix.rxjava:rxjava-groovy:0.15.1'
+
+  compile 'org.elasticsearch:elasticsearch:1.0.1'
+  // required by Groovy runtime reflection in ElasticSearch
+  compile 'com.vividsolutions:jts:1.12'
 
   testCompile 'junit:junit:4.10'
 

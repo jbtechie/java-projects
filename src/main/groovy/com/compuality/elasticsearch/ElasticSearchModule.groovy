@@ -9,6 +9,7 @@ import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.node.Node
 
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder
@@ -18,10 +19,12 @@ class ElasticSearchModule extends AbstractModule {
   @Override
   protected void configure() {
 //    bind(ClientTest).asEagerSingleton()
+    bind(Charset).toInstance(StandardCharsets.UTF_8)
     bind(ObjectMapper).toInstance(new ObjectMapper())
-    bind(ElasticSearchDAO)
+//    bind(ElasticSearchDAO)
 //    bind(DAOTest).asEagerSingleton()
 //    bind(ElasticSearchBenchmark).asEagerSingleton()
+    bind(EdgeMappingBenchmarks).asEagerSingleton()
   }
 
   @Provides

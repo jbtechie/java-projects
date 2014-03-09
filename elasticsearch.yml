@@ -6,3 +6,5 @@ node:
 
 #path:
 #  data: /tmp/es/data
+
+index.number_of_replicas: 1

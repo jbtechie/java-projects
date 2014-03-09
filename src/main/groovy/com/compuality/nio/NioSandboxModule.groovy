@@ -6,7 +6,7 @@ public class NioSandboxModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(MemMappedFileTest).asEagerSingleton()
+//        bind(MemMappedFileTest).asEagerSingleton()
 //      bind(MemMappedFileMapTest).asEagerSingleton()
 //      bind(RandomPositionFileTest).asEagerSingleton()
     }
