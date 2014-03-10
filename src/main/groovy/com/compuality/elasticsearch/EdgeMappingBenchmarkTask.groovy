@@ -1,6 +1,7 @@
 package com.compuality.elasticsearch
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.common.base.Throwables
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.io.Resources
@@ -35,7 +36,6 @@ public class EdgeMappingBenchmarkTask extends Task {
   private static final Logger log = LoggerFactory.getLogger(EdgeMappingBenchmarkTask)
 
   private static final String EDGE_TYPE = 'edge'
-  private static final int MAX_ID = 100
   private static final int MAX_LABEL = 10
 
   private static class Indices {
@@ -91,6 +91,8 @@ public class EdgeMappingBenchmarkTask extends Task {
 
   private static class Options {
     Set<Phase> phases
+    Integer maxId
+    Integer maxLabel
     Long batches
     Long batchSize
     Long queries
@@ -142,16 +144,24 @@ public class EdgeMappingBenchmarkTask extends Task {
     if(Phase.Load in options.phases || Phase.Query in options.phases) {
       results = new Results()
       options.threads = parameters.get('threads').iterator().next() as long
+      options.maxId = parameters.get('max_id').iterator().next() as int
+      options.maxLabel = parameters.get('max_label').iterator().next() as int
     }
 
     if(Phase.Load in options.phases) {
       results.load = []
-      mappings.each { index, mapping -> results.load << benchmarkLoad(index, mapping, options) }
+      mappings.each { index, mapping ->
+        results.load << benchmarkLoad(index, mapping, options)
+        Thread.sleep(5000)
+      }
     }
 
     if(Phase.Query in options.phases) {
       results.query = []
-      mappings.keySet().each { index -> results.query << benchmarkQuery(index, options, !index.equals(Indices.DOC_PER_EDGE_WITH_SOURCE)) }
+      mappings.keySet().each { index ->
+        results.query << benchmarkQuery(index, options, !index.equals(Indices.DOC_PER_EDGE_WITH_SOURCE))
+        Thread.sleep(5000)
+      }
     }
 
     if(Phase.Clean in options.phases) {
@@ -196,7 +206,7 @@ public class EdgeMappingBenchmarkTask extends Task {
       BulkRequestBuilder bulkRequest = client.prepareBulk()
 
       (1..options.batchSize).each {
-        Edge edge = new Edge(rand.nextInt(MAX_ID).toString(), rand.nextInt(MAX_ID).toString(), rand.nextInt(MAX_LABEL).toString())
+        Edge edge = new Edge(rand.nextInt(options.maxId).toString(), rand.nextInt(options.maxId).toString(), rand.nextInt(options.maxLabel).toString())
         bulkRequest.add(client.prepareIndex(index, EDGE_TYPE).setSource(mapper.writeValueAsString(edge)))
       }
 
@@ -212,7 +222,7 @@ public class EdgeMappingBenchmarkTask extends Task {
     executor.shutdown()
     executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS)
 
-    LoadResults results = new LoadResults()
+    LoadResults results = new LoadResults(index:index)
 
     results.duration = (clock.tick() - startTime) / 1e9
     results.totalEdges = options.batches * options.batchSize
@@ -235,7 +245,7 @@ public class EdgeMappingBenchmarkTask extends Task {
       return {
       ThreadLocalRandom rand = ThreadLocalRandom.current()
       QueryBuilder matchAll = QueryBuilders.matchAllQuery()
-      FilterBuilder filter = FilterBuilders.termFilter('source', rand.nextInt(MAX_ID).toString())
+      FilterBuilder filter = FilterBuilders.termFilter('source', rand.nextInt(options.maxId).toString())
       QueryBuilder query = QueryBuilders.filteredQuery(matchAll, filter)
 
       SearchRequestBuilder searchRequest = client.prepareSearch(index)
@@ -261,6 +271,7 @@ public class EdgeMappingBenchmarkTask extends Task {
       } catch(ElasticsearchException e) {
 //        log.error('Failed performing query: {}', searchRequest)
         log.error('Detailed message: {}', e.detailedMessage)
+        Throwables.propagate(e)
       }
       }
     }
@@ -269,7 +280,7 @@ public class EdgeMappingBenchmarkTask extends Task {
     executor.shutdown()
     executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS)
 
-    QueryResults results = new QueryResults()
+    QueryResults results = new QueryResults(index:index)
 
     results.duration = (clock.tick() - startTime) / 1e9
     results.queryRate = options.queries / results.duration

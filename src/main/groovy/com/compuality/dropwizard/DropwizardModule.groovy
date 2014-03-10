@@ -22,7 +22,7 @@ class DropwizardModule extends AbstractModule {
 
     ServerConfiguration.declaredMethods.each {
       if(it.getAnnotation(Configuration) && it.parameterTypes.length == 0 && it.returnType != Void) {
-        bind(it.returnType).toInstance(it.invoke(ServerConfiguration))
+        bind(it.returnType).toInstance(it.invoke(config))
       }
     }
 
