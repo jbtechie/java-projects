@@ -1,15 +1,26 @@
 package com.compuality.query
 
-import com.compuality.query.Query.InternalBuilder.Statement.Type
 
 class Query<T> {
 
+  static <T> T pathGenerator(Class<T> clazz) {
+    return null
+  }
+
+  static Builder<T> on(T pathGenerator) {
+    return new InternalBuilder<>(pathGenerator)
+  }
+
   static interface Builder<T> {
+
+    public T getPathGenerator()
 
     public <F> JoinBuilder<T> where(F path, Constraint<F> constraint, JoinConstraint<F>... moreConstraints)
   }
 
   static interface JoinBuilder<T> {
+
+    public T getPathGenerator()
 
     public <F> JoinBuilder<T> and(F path, Constraint<F> constraint, JoinConstraint<F>... moreConstraints)
 
@@ -18,25 +29,35 @@ class Query<T> {
     public Query<T> build()
   }
 
-  static private class InternalBuilder implements Builder<T>, JoinBuilder<T> {
+  static private class InternalBuilder<T> implements Builder<T>, JoinBuilder<T> {
 
-    private List<Statement> statements = []
+    private final T pathGenerator
+    private final List<Statement> statements = []
+
+    InternalBuilder(T pathGenerator) {
+      this.pathGenerator = pathGenerator
+    }
+
+    @Override
+    T getPathGenerator() {
+      return pathGenerator
+    }
 
     @Override
     def <F> JoinBuilder<T> where(F path, Constraint<F> constraint, JoinConstraint<F>... moreConstraints) {
-      statements.add(new Statement(Type.Initial, path, constraint, moreConstraints))
+      statements.add(new Statement(StatementType.Initial, path, constraint, moreConstraints))
       return this
     }
 
     @Override
     def <F> JoinBuilder<T> and(F path, Constraint<F> constraint, JoinConstraint<F>... moreConstraints) {
-      statements.add(new Statement(Type.And, path, constraint, moreConstraints))
+      statements.add(new Statement(StatementType.And, path, constraint, moreConstraints))
       return this
     }
 
     @Override
     def <F> JoinBuilder<T> or(F path, Constraint<F> constraint, JoinConstraint<F>... moreConstraints) {
-      statements.add(new Statement(Type.Or, path, constraint, moreConstraints))
+      statements.add(new Statement(StatementType.Or, path, constraint, moreConstraints))
       return this
     }
 
@@ -45,21 +66,27 @@ class Query<T> {
       return null
     }
 
+    private enum StatementType {
+      Initial,
+      And,
+      Or
+    }
+
     private static class Statement {
 
-      private final Type type
+      private final StatementType type
       private final Object path
       private final Constraint constraint
       private final JoinConstraint[] moreConstraints
 
-      private Statement(Type type, Object path, Constraint constraint, JoinConstraint[] moreConstraints) {
+      private Statement(StatementType type, Object path, Constraint constraint, JoinConstraint[] moreConstraints) {
         this.type = type
         this.path = path
         this.constraint = constraint
         this.moreConstraints = moreConstraints
       }
 
-      Type getType() {
+      StatementType getType() {
         return type
       }
 
@@ -73,12 +100,6 @@ class Query<T> {
 
       JoinConstraint[] getMoreConstraints() {
         return moreConstraints
-      }
-
-      enum Type {
-        Initial,
-        And,
-        Or
       }
     }
   }
