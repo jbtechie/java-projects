@@ -2,8 +2,8 @@ package com.compuality.query
 
 import org.junit.Test
 
-import static com.compuality.query.Constraints.equalTo
-import static com.compuality.query.Constraints.greaterThan
+import static CoreConstraints.equalTo
+import static CoreConstraints.greaterThan
 
 class QueryTest {
 

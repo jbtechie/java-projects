@@ -2,7 +2,7 @@ package com.compuality.query
 
 import com.compuality.query.Query.Constraint
 
-class Constraints {
+class CoreConstraints {
 
   static <F> Constraint<F> equalTo(F value) {
     return new EqualToConstraint<F>(value)
