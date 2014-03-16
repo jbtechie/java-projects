@@ -37,4 +37,11 @@ class ElasticSearchLearningTests {
     assertThat(count, equalTo(1))
     assertThat(response.aliases.containsKey(index), equalTo(true))
   }
+
+  @Test
+  void testGetAliasesWhenNonExistent() {
+    GetAliasesResponse response = client.admin().indices().prepareGetAliases('no_alias').get()
+    int count = response.aliases.keys().size()
+    assertThat(count, equalTo(0))
+  }
 }

@@ -1,5 +1,4 @@
 package com.compuality.dropwizard
-
 import com.compuality.ServerConfiguration
 import com.compuality.elasticsearch.ElasticSearchModule
 import com.compuality.experiment.ExperimentModule
