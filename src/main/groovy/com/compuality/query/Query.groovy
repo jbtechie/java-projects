@@ -1,9 +1,5 @@
 package com.compuality.query
 
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-
-
 class Query<T> {
 
   static <T> T pathGenerator(Class<T> clazz) {
@@ -113,45 +109,5 @@ class Query<T> {
 
   static interface JoinConstraint<F> {
 
-  }
-
-  static class PathGeneratorProxy implements InvocationHandler {
-
-    private List<String> path = new ArrayList<>()
-
-    @Override
-    Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      if(method.returnType.isPrimitive()) {
-        if(method.returnType == Void.class) {
-          throw new RuntimeException('Void leaf not supported.')
-        }
-
-        //todo: handle
-      }
-
-      if(method.returnType.isArray() && method.returnType.componentType.isPrimitive()) {
-        if(method.returnType.componentType == Void.class) {
-          throw new RuntimeException('Array of voids leaf not supported.')
-        }
-
-        //todo: handle
-      }
-
-      if(Collection.isAssignableFrom(method.returnType)) {
-        if(method.returnType.typeParameters.length != 1) {
-          throw new RuntimeException('Invalid collection type.')
-        }
-        final Class<?> genericDeclaration = method.returnType.typeParameters[0].genericDeclaration
-        if(genericDeclaration.isPrimitive()) {
-          if(genericDeclaration == Void.class) {
-            throw new RuntimeException('Collection of voids leaf not supported.')
-          }
-
-          //todo: handle
-        }
-      }
-
-      return null
-    }
   }
 }

@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThat
 
 class ElasticSearchLearningTests {
 
+  private static final Random rand = new Random()
   private static Node node
   private static Client client
 
@@ -28,8 +29,8 @@ class ElasticSearchLearningTests {
 
   @Test
   void testAliasesExists() {
-    String index = 'test_index'
-    String alias = 'test_alias'
+    String index = randIndex()
+    String alias = randAlias()
     client.admin().indices().prepareCreate(index).get()
     client.admin().indices().prepareAliases().addAlias(index, alias).get()
     GetAliasesResponse response = client.admin().indices().prepareGetAliases().get()
@@ -43,5 +44,33 @@ class ElasticSearchLearningTests {
     GetAliasesResponse response = client.admin().indices().prepareGetAliases('no_alias').get()
     int count = response.aliases.keys().size()
     assertThat(count, equalTo(0))
+  }
+
+  @Test
+  void testAliasOfAlias() {
+    String index = randIndex()
+    String alias1 = randAlias()
+    String alias2 = randAlias()
+    client.admin().indices().prepareCreate(index).get()
+    client.admin().indices().prepareAliases().addAlias(index, alias1).get()
+    client.admin().indices().prepareAliases().addAlias(alias1, alias2).get()
+
+    GetAliasesResponse response = client.admin().indices().prepareGetAliases(alias1).get()
+    int count = response.aliases.keys().size()
+    assertThat(count, equalTo(1))
+    assertThat(response.aliases.containsKey(index), equalTo(true))
+
+    response = client.admin().indices().prepareGetAliases(alias2).get()
+    count = response.aliases.keys().size()
+    assertThat(count, equalTo(1))
+    assertThat(response.aliases.containsKey(index), equalTo(true))
+  }
+
+  private static String randIndex() {
+    return 'index' + rand.nextLong()
+  }
+
+  private static String randAlias() {
+    return 'alias' + rand.nextLong()
   }
 }
