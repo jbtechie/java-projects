@@ -20,9 +20,10 @@ class DropwizardModule extends AbstractModule {
   protected void configure() {
     bind(ServerConfiguration).toInstance(config)
 
-    ServerConfiguration.declaredMethods.each {
-      if(it.getAnnotation(Configuration) && it.parameterTypes.length == 0 && it.returnType != Void) {
-        bind(it.returnType).toInstance(it.invoke(config))
+    ServerConfiguration.declaredFields.each {
+      if(it.getAnnotation(Configuration)) {
+        it.accessible = true
+        bind(it.type).toInstance(it.get(config))
       }
     }
 

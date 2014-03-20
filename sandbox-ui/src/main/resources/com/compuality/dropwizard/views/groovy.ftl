@@ -1,8 +1,9 @@
+<#-- @ftlvariable name="" type="com.example.views.PersonView" -->
 <html>
 <body>
-<script src="js/raphael-min.js"></script>
-<script src="js/g.raphael-min.js"></script>
-<script src="js/g.line-min.js"></script>
+<script src="/js/raphael-min.js"></script>
+<script src="/js/g.raphael-min.js"></script>
+<script src="/js/g.pie-min.js"></script>
 <script>
     // Creates canvas 640 × 480 at 10, 50
     var r = Raphael(10, 50, 640, 480);

@@ -1,0 +1,8 @@
+logging:
+  level: INFO
+  loggers:
+    "com.compuality": DEBUG
+http:
+  rootPath: /services/*  # Default is /*
+elasticsearch:
+    transportAddresses: ['162.242.242.96:9300']
