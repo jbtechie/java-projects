@@ -1,0 +1,23 @@
+apply plugin: 'java'
+
+evaluationDependsOn(':main-shadow')
+
+archive = {
+  from 'src/dist'
+  into('lib') {
+    from { project(':main-shadow').shadowJar.outputJar }
+  }
+
+  baseName = rootProject.name
+}
+
+task zip(dependsOn: project(':main-shadow').shadowJar, type: Zip) {
+  with archive
+}
+
+task tgz(dependsOn: project(':main-shadow').shadowJar, type: Tar) {
+  with archive
+  compression Compression.GZIP
+}
+
+task dist(dependsOn:[zip,tgz]) {}

@@ -1,3 +1,5 @@
-include 'application'
-include 'sandbox-main'
+rootProject.name = 'compuality-sandbox'
+
+include 'distributions'
+include 'main-shadow'
 include 'sandbox-ui'

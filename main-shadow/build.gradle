@@ -24,7 +24,3 @@ jar {
     attributes 'Main-Class': 'com.compuality.dropwizard.MainService'
   }
 }
-
-shadowJar {
-
-}

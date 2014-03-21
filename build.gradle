@@ -1,7 +1,17 @@
-subprojects {
+def gitInfo() {
+    def cmd = "git rev-parse --short HEAD"
+    def proc = cmd.execute()
+    return proc.text.trim()
+}
 
-  group = 'com.compuality.groovy-dropwizard'
-  version = '0.0.1'
+subprojects {
+  group = 'com.compuality.sandbox'
+  if(project.hasProperty('noDate')) {
+    version = '0.0.1'
+  } else {
+//    version = '0.0.1-' + new Date().format('yyyyMMddHHmmss')
+    version = '0.0.1-' + gitInfo()
+  }
 
   repositories {
     mavenCentral()
