@@ -1,2 +1,3 @@
+include 'application'
 include 'sandbox-main'
 include 'sandbox-ui'
