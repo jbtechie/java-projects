@@ -2,4 +2,4 @@ rootProject.name = 'compuality-sandbox'
 
 include 'distributions'
 include 'main-shadow'
-include 'sandbox-ui'
+include 'web-ui'

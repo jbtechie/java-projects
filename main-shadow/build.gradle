@@ -11,7 +11,7 @@ buildscript {
 }
 
 dependencies {
-  compile project(':sandbox-ui')
+  compile project(':web-ui')
 }
 
 shadow {
