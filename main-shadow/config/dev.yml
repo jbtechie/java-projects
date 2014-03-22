@@ -3,5 +3,8 @@ logging:
   loggers:
     "com.compuality": DEBUG
 
+http:
+  rootPath: /services/*
+
 #elasticsearch:
 #  nativeConfig: config/es_override.yml

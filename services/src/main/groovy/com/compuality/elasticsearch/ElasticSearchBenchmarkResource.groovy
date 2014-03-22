@@ -1,8 +1,6 @@
 package com.compuality.elasticsearch
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.yammer.dropwizard.json.ObjectMapperFactory
-import org.elasticsearch.action.admin.cluster.stats.ClusterStatsResponse
+import com.yammer.metrics.annotation.Timed
 import org.elasticsearch.client.Client
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,18 +25,8 @@ class ElasticSearchBenchmarkResource {
   }
 
   @GET
+  @Timed
   String runBenchmark() {
-    ClusterStatsResponse response = client.admin().cluster().prepareClusterStats().get()
-    log.debug('Response: {}', response)
-    ObjectMapperFactory mapperFactory = new ObjectMapperFactory()
-    mapperFactory.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-    try {
-      String responseString = mapperFactory.build().writeValueAsString(response)
-      log.debug('Response string: {}', responseString)
-      return responseString
-    } catch(Exception e) {
-      log.error('Exception serializing response to JSON.', e)
-      return ''
-    }
+    return client.admin().cluster().prepareClusterStats().get().toString()
   }
 }
