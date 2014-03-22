@@ -13,6 +13,9 @@ dependencies {
   compile 'com.google.guava:guava:16.0.1'
   compile 'com.netflix.rxjava:rxjava-groovy:0.15.1'
   compile 'com.yammer.metrics:metrics-core:2.2.0'
+  compile 'com.fasterxml.jackson.core:jackson-core:2.1.4'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.1.4'
+  compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.1.4'
 
   testCompile 'junit:junit:4.10'
 }
