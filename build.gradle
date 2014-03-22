@@ -11,7 +11,7 @@ def gitInfo() {
 }
 
 def isCleanGitWorkingDirectory() {
-  def cmd = "git rev-parse HEAD"
+  def cmd = "git status --porcelain"
   def proc = cmd.execute()
   return proc.text.trim().length() == 0
 }
