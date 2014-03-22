@@ -1,3 +1,5 @@
+import org.joda.time.DateTime
+
 def gitInfoShort() {
     def cmd = "git rev-parse --short HEAD"
     def proc = cmd.execute()
@@ -16,7 +18,17 @@ def isCleanGitWorkingDirectory() {
   return proc.text.trim().length() == 0
 }
 
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'joda-time:joda-time:2.2'
+  }
+}
+
 ext {
+  now = DateTime.now()
   gitInfo = gitInfo()
   shortGitInfo = gitInfoShort()
   isCleanGitDir = isCleanGitWorkingDirectory()
