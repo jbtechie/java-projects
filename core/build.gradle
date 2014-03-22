@@ -18,6 +18,9 @@ dependencies {
 }
 
 task buildMetadata << {
+  if(isDirtyGitDir) {
+    throw new GradleException('The git working directory has modifications.')
+  }
   final String generatedResources = "${buildDir}/generated-resources"
   file("${generatedResources}/com/compuality").with {
     mkdirs()
