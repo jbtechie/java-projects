@@ -47,6 +47,4 @@ class GuiceBindingsLearnTests {
 
   }
 
-//  @BindingAnnotation @Target([ ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD ]) @Retention(RetentionPolicy.RUNTIME)
-//  public @interface MyBindingAnnotation {}
 }

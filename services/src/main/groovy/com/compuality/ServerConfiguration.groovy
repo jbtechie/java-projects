@@ -5,6 +5,6 @@ import com.yammer.dropwizard.config.Configuration
 
 class ServerConfiguration extends Configuration {
 
-  @com.compuality.Configuration
+  @BindConfiguration
   ElasticSearchConfiguration elasticsearch = new ElasticSearchConfiguration()
 }

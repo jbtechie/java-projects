@@ -15,4 +15,6 @@ dependencies {
   compile 'org.elasticsearch:elasticsearch:1.0.1'
   // required by Groovy runtime reflection in ElasticSearch
   compile 'com.vividsolutions:jts:1.12'
+
+  testCompile 'junit:junit:4.10'
 }

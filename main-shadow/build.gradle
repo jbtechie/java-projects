@@ -1,6 +1,11 @@
 apply plugin: 'groovy'
 apply plugin: 'shadow'
 
+compileJava {
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
+}
+
 buildscript {
   repositories {
     jcenter()
