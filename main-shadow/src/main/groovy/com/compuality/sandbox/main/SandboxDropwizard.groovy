@@ -2,6 +2,7 @@ package com.compuality.sandbox.main
 
 import com.compuality.collection.CollectionAppender
 import com.compuality.dropwizard.DropwizardModule
+import com.compuality.elasticsearch.ElasticSearchModule
 import com.google.inject.Guice
 import com.google.inject.Module
 import com.yammer.dropwizard.Service
@@ -22,6 +23,7 @@ class SandboxDropwizard extends Service<SandboxConfiguration> {
   void run(SandboxConfiguration config, Environment env) throws Exception {
 
     moduleRegistry.add(new DropwizardModule(config, env))
+    moduleRegistry.add(new ElasticSearchModule())
 
     Guice.createInjector(moduleRegistry.items())
   }

@@ -23,6 +23,7 @@ class DropwizardModule extends AbstractModule {
     bindConfigsRecursively(config)
     bind(Environment).toInstance(env)
 
+    // Create multibinders so there is at least an empty set available for Guice to inject.
     Multibinder<Object> resourceBinder = Multibinder.newSetBinder(binder(), Object, ExposedResource)
     Multibinder<Task> taskBinder = Multibinder.newSetBinder(binder(), Task)
     Multibinder<HealthCheck> healthCheckBinder = Multibinder.newSetBinder(binder(), HealthCheck)
