@@ -4,4 +4,4 @@ logging:
     "com.compuality": DEBUG
 
 #elasticsearch:
-#  nativeConfig: null
+#  nativeConfig: config/es_override.yml
