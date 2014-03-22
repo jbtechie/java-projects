@@ -21,7 +21,7 @@ task buildMetadata << {
   final String generatedResources = "${buildDir}/generated-resources"
   file("${generatedResources}/com/compuality").with {
     mkdirs()
-    file(new File(it, 'revision.yml')).withWriter { it.write("revision:${gitInfo()}" as String) }
+    file(new File(it, 'revision.yml')).withWriter { it.write("revision:${gitInfo()}.${isCleanGitWorkingDirectory()}" as String) }
   }
   sourceSets.main.resources.srcDir generatedResources
 }

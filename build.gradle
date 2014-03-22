@@ -10,6 +10,12 @@ def gitInfo() {
   return proc.text.trim()
 }
 
+def isCleanGitWorkingDirectory() {
+  def cmd = "git rev-parse HEAD"
+  def proc = cmd.execute()
+  return proc.text.trim().length() == 0
+}
+
 subprojects {
   group = 'com.compuality.sandbox'
   if(project.hasProperty('noDate')) {
