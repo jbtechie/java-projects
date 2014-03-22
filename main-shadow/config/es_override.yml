@@ -1,1 +1,1 @@
-gateway.type: local
+node.local: false

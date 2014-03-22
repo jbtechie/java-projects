@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+<div id="testdiv"></div>
+<script src="/js/jquery-1.6.4-min.js"></script>
+<script>
+  $(document).ready(function() {
+    resp = $.ajax({
+      type: "GET",
+      url: "/services/elasticsearch?name=foo"
+    });
+
+    resp.done(function(data, status, xhr) {
+      $("div").html(data[0]);
+      console.log(data);
+      console.log(status);
+      console.log(xhr);
+    });
+  });
+</script>
+</body>
+</html>

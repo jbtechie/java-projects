@@ -21,8 +21,10 @@ dependencies {
 //  js name: 'g.raphael', version: '0.51', classifier: 'min', ext: "js"
 
 }
-
-task fetchJs(type: Copy) {
-  from configurations.js
-  into "$buildDir/resources/com.compuality.sandbox.web.ui/js"
-}
+//
+//task fetchJs(type: Copy) {
+//  from configurations.js
+//  into "$buildDir/resources/com/compuality/sandbox/web/ui/js"
+//}
+//
+//jar.dependsOn { fetchJs }

@@ -5,6 +5,7 @@ import com.compuality.elasticsearch.ElasticSearchModule
 import com.google.inject.Guice
 import com.google.inject.Module
 import com.yammer.dropwizard.Service
+import com.yammer.dropwizard.assets.AssetsBundle
 import com.yammer.dropwizard.config.Bootstrap
 import com.yammer.dropwizard.config.Environment
 
@@ -16,6 +17,7 @@ class SandboxDropwizard extends Service<SandboxConfiguration> {
 
   @Override
   void initialize(Bootstrap<SandboxConfiguration> bootstrap) {
+    bootstrap.addBundle(new AssetsBundle('/com/compuality/sandbox/web/ui', '/'))
   }
 
   @Override
