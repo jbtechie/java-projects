@@ -16,13 +16,20 @@ def isCleanGitWorkingDirectory() {
   return proc.text.trim().length() == 0
 }
 
+ext {
+  gitInfo = gitInfo()
+  shortGitInfo = gitInfoShort()
+  isCleanGitDir = isCleanGitWorkingDirectory()
+  isDirtyGitDir = !isCleanGitWorkingDirectory()
+}
+
 subprojects {
   group = 'com.compuality.sandbox'
   if(project.hasProperty('noDate')) {
     version = '0.0.1'
   } else {
 //    version = '0.0.1-' + new Date().format('yyyyMMddHHmmss')
-    version = '0.0.1-' + gitInfoShort()
+    version = '0.0.1-' + shortGitInfo
   }
 
   repositories {
