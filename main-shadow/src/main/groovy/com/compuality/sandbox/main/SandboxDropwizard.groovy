@@ -1,5 +1,4 @@
 package com.compuality.sandbox.main
-
 import com.compuality.collection.CollectionAppender
 import com.compuality.dropwizard.DropwizardModule
 import com.compuality.elasticsearch.ElasticSearchModule

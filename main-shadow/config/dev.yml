@@ -2,3 +2,6 @@ logging:
   level: INFO
   loggers:
     "com.compuality": DEBUG
+
+#elasticsearch:
+#  nativeConfig: null

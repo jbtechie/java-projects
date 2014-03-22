@@ -1,7 +1,11 @@
 package com.compuality.elasticsearch
+
+import com.compuality.dropwizard.ExposedResource
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
+import com.google.inject.Scopes
 import com.google.inject.Singleton
+import com.google.inject.multibindings.Multibinder
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.common.settings.ImmutableSettings.Builder
@@ -24,17 +28,19 @@ class ElasticSearchModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    Multibinder<Object> resourceBinder = Multibinder.newSetBinder(binder(), Object, ExposedResource)
+    resourceBinder.addBinding().to(ElasticSearchBenchmarkResource).in(Scopes.SINGLETON)
   }
 
   @Provides
   @Singleton
-  Client getClient(ElasticSearchConfiguration config) {
+  Client client(ElasticSearchConfiguration config) {
 
     Builder settingsBuilder = ImmutableSettings.builder().loadFromClasspath(resourceConfig)
 
-    if(config.elasticsearchConfig) {
-      config.elasticsearchConfig.withInputStream { configStream ->
-        settingsBuilder.loadFromStream(config.elasticsearchConfig.name, configStream)
+    if(config.nativeConfig) {
+      config.nativeConfig.withInputStream { configStream ->
+        settingsBuilder.loadFromStream(config.nativeConfig.name, configStream)
       }
     }
 
