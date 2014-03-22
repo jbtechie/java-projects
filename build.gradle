@@ -1,7 +1,13 @@
-def gitInfo() {
+def gitInfoShort() {
     def cmd = "git rev-parse --short HEAD"
     def proc = cmd.execute()
     return proc.text.trim()
+}
+
+def gitInfo() {
+  def cmd = "git rev-parse HEAD"
+  def proc = cmd.execute()
+  return proc.text.trim()
 }
 
 subprojects {
@@ -10,7 +16,7 @@ subprojects {
     version = '0.0.1'
   } else {
 //    version = '0.0.1-' + new Date().format('yyyyMMddHHmmss')
-    version = '0.0.1-' + gitInfo()
+    version = '0.0.1-' + gitInfoShort()
   }
 
   repositories {
