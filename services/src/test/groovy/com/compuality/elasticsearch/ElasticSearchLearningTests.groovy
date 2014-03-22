@@ -1,5 +1,5 @@
 package com.compuality.elasticsearch
-import com.compuality.elasticsearch.util.TestNodeFactory
+import TestNodeFactory
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse
 import org.elasticsearch.client.Client
 import org.elasticsearch.node.Node

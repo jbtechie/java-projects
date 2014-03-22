@@ -1,8 +1,8 @@
 package com.compuality.elasticsearch
+
 import com.google.inject.Inject
 import com.yammer.metrics.Metrics
 import com.yammer.metrics.core.MetricName
-import com.yammer.metrics.core.Timer
 import com.yammer.metrics.core.TimerContext
 import groovy.json.JsonBuilder
 import org.elasticsearch.client.Client

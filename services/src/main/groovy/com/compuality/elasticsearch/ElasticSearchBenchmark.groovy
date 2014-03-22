@@ -2,7 +2,6 @@ package com.compuality.elasticsearch
 
 import com.google.common.util.concurrent.AtomicDouble
 import com.yammer.metrics.Metrics
-import com.yammer.metrics.core.Timer
 import com.yammer.metrics.core.TimerContext
 import org.elasticsearch.action.bulk.BulkRequestBuilder
 import org.elasticsearch.action.bulk.BulkResponse

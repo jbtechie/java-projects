@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
 import com.google.inject.Provider
 import com.yammer.metrics.Metrics
-import com.yammer.metrics.core.Timer
 import com.yammer.metrics.core.TimerContext
 import org.elasticsearch.action.bulk.BulkItemResponse
 import org.elasticsearch.action.bulk.BulkRequestBuilder
@@ -12,8 +11,8 @@ import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.client.Client
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import rx.Observable
 import rx.util.functions.Func1
+import rx.Observable
 
 import java.util.concurrent.TimeUnit
 

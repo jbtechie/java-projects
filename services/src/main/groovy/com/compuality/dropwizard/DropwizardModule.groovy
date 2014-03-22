@@ -1,8 +1,6 @@
 package com.compuality.dropwizard
-
 import com.compuality.Configuration
 import com.compuality.ServerConfiguration
-import com.compuality.dropwizard.views.ViewResource
 import com.google.inject.AbstractModule
 import com.yammer.dropwizard.config.Environment
 
@@ -30,6 +28,5 @@ class DropwizardModule extends AbstractModule {
     bind(Random.class).toInstance(new Random(0))
     bind(Environment.class).toInstance(env)
     bind(GroovyResource.class).asEagerSingleton()
-    bind(ViewResource.class).asEagerSingleton()
   }
 }
