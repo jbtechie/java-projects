@@ -1,5 +1,5 @@
 package com.compuality.dropwizard
-import com.compuality.BindConfiguration
+import com.compuality.guice.Bind
 import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
 import com.yammer.dropwizard.config.Environment
@@ -37,7 +37,7 @@ class DropwizardModule extends AbstractModule {
     bind(config.class).toInstance(config)
 
     config.class.declaredFields.each {
-      if(it.getAnnotation(BindConfiguration)) {
+      if(it.getAnnotation(Bind)) {
         it.accessible = true
         bindConfigsRecursively(it.get(config))
       }

@@ -1,11 +1,11 @@
 package com.compuality.sandbox.main
 
-import com.compuality.BindConfiguration
+import com.compuality.guice.Bind
 import com.compuality.elasticsearch.ElasticSearchConfiguration
 import com.yammer.dropwizard.config.Configuration
 
 class SandboxConfiguration extends Configuration {
 
-  @BindConfiguration
+  @Bind
   ElasticSearchConfiguration elasticsearch = new ElasticSearchConfiguration()
 }
