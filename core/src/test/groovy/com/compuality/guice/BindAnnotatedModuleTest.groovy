@@ -1,4 +1,5 @@
 package com.compuality.guice
+
 import com.google.inject.Binder
 import com.google.inject.Key
 import com.google.inject.Module
@@ -7,8 +8,13 @@ import com.google.inject.binder.LinkedBindingBuilder
 import com.google.inject.name.Named
 import org.junit.Test
 
-import static org.mockito.Matchers.*
-import static org.mockito.Mockito.*
+import static org.mockito.Matchers.anyObject
+import static org.mockito.Matchers.anyVararg
+import static org.mockito.Matchers.eq
+import static org.mockito.Mockito.mock
+import static org.mockito.Mockito.times
+import static org.mockito.Mockito.when
+import static org.mockito.Mockito.verify
 
 class BindAnnotatedModuleTest {
 
