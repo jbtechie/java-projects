@@ -1,6 +1,6 @@
 package com.compuality.elasticsearch
 
-import com.compuality.dropwizard.ExposedResource
+import com.compuality.guice.WebService
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import com.google.inject.Scopes
@@ -28,13 +28,13 @@ class ElasticSearchModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    Multibinder<Object> resourceBinder = Multibinder.newSetBinder(binder(), Object, ExposedResource)
+    Multibinder<WebService> resourceBinder = Multibinder.newSetBinder(binder(), WebService)
     resourceBinder.addBinding().to(ElasticSearchBenchmarkResource).in(Scopes.SINGLETON)
   }
 
   @Provides
   @Singleton
-  Client client(ElasticSearchConfiguration config) {
+  Client client(ElasticSearchConfig config) {
 
     Builder settingsBuilder = ImmutableSettings.builder().loadFromClasspath(resourceConfig)
 

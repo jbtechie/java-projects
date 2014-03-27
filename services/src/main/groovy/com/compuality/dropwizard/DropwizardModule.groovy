@@ -1,5 +1,6 @@
 package com.compuality.dropwizard
-import com.compuality.guice.Bind
+
+import com.compuality.guice.WebService
 import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
 import com.yammer.dropwizard.config.Environment
@@ -20,11 +21,10 @@ class DropwizardModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bindConfigsRecursively(config)
     bind(Environment).toInstance(env)
 
     // Create multibinders so there is at least an empty set available for Guice to inject.
-    Multibinder<Object> resourceBinder = Multibinder.newSetBinder(binder(), Object, ExposedResource)
+    Multibinder<Object> resourceBinder = Multibinder.newSetBinder(binder(), WebService)
     Multibinder<Task> taskBinder = Multibinder.newSetBinder(binder(), Task)
     Multibinder<HealthCheck> healthCheckBinder = Multibinder.newSetBinder(binder(), HealthCheck)
 
@@ -33,22 +33,11 @@ class DropwizardModule extends AbstractModule {
     bind(HealthCheckCollector).asEagerSingleton()
   }
 
-  private void bindConfigsRecursively(Object config) {
-    bind(config.class).toInstance(config)
-
-    config.class.declaredFields.each {
-      if(it.getAnnotation(Bind)) {
-        it.accessible = true
-        bindConfigsRecursively(it.get(config))
-      }
-    }
-  }
-
   private static class ResourceCollector {
 
     @Inject
-    ResourceCollector(Environment env, @ExposedResource Set<Object> resources) {
-      for(Object r : resources) {
+    ResourceCollector(Environment env, Set<WebService> resources) {
+      for(WebService r : resources) {
         env.addResource(r)
       }
     }

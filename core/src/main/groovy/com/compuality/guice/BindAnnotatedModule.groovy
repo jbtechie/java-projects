@@ -7,13 +7,9 @@ import java.lang.annotation.Annotation
 
 class BindAnnotatedModule extends AbstractModule {
 
-  static BindAnnotatedModule fromInstance(Object root) {
-    return new BindAnnotatedModule(root)
-  }
-
   private final Object root
 
-  private BindAnnotatedModule(Object root) {
+  public BindAnnotatedModule(Object root) {
     this.root = root
   }
 

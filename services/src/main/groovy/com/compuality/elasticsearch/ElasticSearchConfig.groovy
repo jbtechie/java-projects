@@ -1,6 +1,6 @@
 package com.compuality.elasticsearch
 
-class ElasticSearchConfiguration {
+class ElasticSearchConfig {
 
   File nativeConfig
 }
