@@ -1,6 +1,6 @@
 package com.compuality.elasticsearch
 
-import com.compuality.guice.WebService
+import com.compuality.inject.WebService
 import com.google.common.base.Optional
 import com.yammer.metrics.annotation.Timed
 import org.elasticsearch.client.Client

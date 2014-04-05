@@ -1,0 +1,3 @@
+cluster.name: elasticsearch_compuality
+
+node.client: true

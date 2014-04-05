@@ -6,13 +6,8 @@ compileJava {
 }
 
 dependencies {
-  compile project(':core')
-  testCompile project(':core')
-
-  compile project(':datastore:elasticsearch')
-
-  compile 'com.yammer.dropwizard:dropwizard-core:0.6.2'
-  compile 'com.sun.jersey:jersey-client:1.17.1'
+  compile project(':datastore:api')
+  testCompile project(':datastore:api')
 
   compile 'org.elasticsearch:elasticsearch:1.0.1'
   // required by Groovy runtime reflection in ElasticSearch

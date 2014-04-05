@@ -15,7 +15,7 @@
     });
 
     resp.done(function(data, status, xhr) {
-      $("div").html(data[0]);
+      $("div").html(JSON.stringify(data));
       console.log(data);
       console.log(status);
       console.log(xhr);

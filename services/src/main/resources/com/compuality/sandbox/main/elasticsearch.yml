@@ -1,0 +1,6 @@
+cluster.name: elasticsearch_compuality
+node.local: true
+node.client: false
+node.data: true
+index.store.type: memory
+gateway.type: none

@@ -1,6 +1,6 @@
 package com.compuality.dropwizard
 
-import com.compuality.guice.WebService
+import com.compuality.inject.WebService
 import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
 import com.yammer.dropwizard.config.Environment
