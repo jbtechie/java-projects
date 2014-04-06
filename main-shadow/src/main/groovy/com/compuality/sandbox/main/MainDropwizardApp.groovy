@@ -13,17 +13,17 @@ import com.yammer.dropwizard.config.Environment
 
 import static com.compuality.collection.impl.CollectionAppenderImpl.listAppender
 
-class SandboxDropwizard extends Service<SandboxConfiguration> {
+class MainDropwizardApp extends Service<MainDropwizardAppConfig> {
 
   private final CollectionAppender<Module> moduleRegistry = listAppender()
 
   @Override
-  void initialize(Bootstrap<SandboxConfiguration> bootstrap) {
+  void initialize(Bootstrap<MainDropwizardAppConfig> bootstrap) {
     bootstrap.addBundle(new AssetsBundle('/com/compuality/sandbox/web/ui', '/'))
   }
 
   @Override
-  void run(SandboxConfiguration config, Environment env) throws Exception {
+  void run(MainDropwizardAppConfig config, Environment env) throws Exception {
 
     moduleRegistry.add(new BindAnnotatedModule(config))
     moduleRegistry.add(new DropwizardModule(config, env))
@@ -33,6 +33,6 @@ class SandboxDropwizard extends Service<SandboxConfiguration> {
   }
 
   static void main(String... args) {
-    new SandboxDropwizard().run(args)
+    new MainDropwizardApp().run(args)
   }
 }

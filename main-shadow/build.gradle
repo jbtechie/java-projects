@@ -28,6 +28,6 @@ shadow {
 
 jar {
   manifest {
-    attributes 'Main-Class': 'com.compuality.sandbox.main.SandboxDropwizard'
+    attributes 'Main-Class': 'com.compuality.sandbox.main.MainDropwizardApp'
   }
 }

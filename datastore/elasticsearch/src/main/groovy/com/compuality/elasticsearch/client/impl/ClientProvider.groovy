@@ -2,6 +2,7 @@ package com.compuality.elasticsearch.client.impl
 import com.compuality.elasticsearch.client.ElasticSearchClientConfig
 import com.compuality.elasticsearch.client.ElasticSearchClientProvider
 import com.compuality.inject.SingletonValueProvider
+import com.compuality.resource.URIs
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.settings.ImmutableSettings
 import org.elasticsearch.common.settings.Settings
@@ -22,7 +23,7 @@ class ClientProvider extends SingletonValueProvider<Client> implements ElasticSe
   @Override
   protected Client create() {
     Settings settings = ImmutableSettings.builder()
-        .loadFromClasspath(config.nativeConfigResource)
+        .loadFromSource(URIs.toURL(config.nativeConfig).text)
         .build()
 
     return nodeBuilder().settings(settings).node().client()
