@@ -20,7 +20,7 @@ class BindAnnotatedModuleTest {
 
   @Test
   void testConfigure() {
-    Module module = BindAnnotatedModule.fromInstance(new AnnotatedObject())
+    Module module = new BindAnnotatedModule(new AnnotatedObject())
 
     Binder binder1 = mock(Binder)
     LinkedBindingBuilder linkedBindingBuilder = mock(LinkedBindingBuilder)

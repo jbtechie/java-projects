@@ -8,7 +8,11 @@ import com.compuality.elasticsearch.client.ElasticSearchClientProvider
 import com.compuality.interfaces.Identified
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.base.Function
+import com.yammer.metrics.Metrics
+import com.yammer.metrics.core.Histogram
+import com.yammer.metrics.core.Meter
 import org.elasticsearch.action.bulk.BulkRequestBuilder
+import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.Client
@@ -17,6 +21,7 @@ import org.elasticsearch.index.query.QueryBuilder
 import org.elasticsearch.search.SearchHit
 
 import javax.inject.Inject
+import java.util.concurrent.TimeUnit
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static org.elasticsearch.common.unit.TimeValue.timeValueHours
@@ -29,6 +34,10 @@ class ElasticSearchDatastore implements Datastore {
   private final ElasticSearchDatastoreConfig config
   private final int scrollSize
   private final ObjectMapper mapper
+
+  private final Meter storeObjectCountMeter = Metrics.newMeter(ElasticSearchDatastore, 'store object count meter', 'objects stored', TimeUnit.SECONDS)
+  private final Meter storeObjectSizeMeter = Metrics.newMeter(ElasticSearchDatastore, 'store object size meter', 'bytes stored', TimeUnit.SECONDS)
+  private final Histogram storeObjectSizeHistogram = Metrics.newHistogram(ElasticSearchDatastore, 'store object size histogram')
 
   @Inject
   ElasticSearchDatastore(ElasticSearchClientProvider clientProvider, ObjectMapper mapper, ElasticSearchDatastoreConfig config) {
@@ -55,11 +64,18 @@ class ElasticSearchDatastore implements Datastore {
   @Override
   def <T> void store(List<T> objects) {
     BulkRequestBuilder bulkRequest = client().prepareBulk()
+    List<Integer> objectSizes = []
     objects.each {
       String doc = mapper.writeValueAsString(new ObjectDocument<>(it))
+      storeObjectSizeHistogram.update(doc.length())
+      objectSizes.add(doc.length())
       bulkRequest.add(client().prepareIndex(config.index, it.class.name).setSource(doc))
     }
-    bulkRequest.get()
+    BulkResponse response = bulkRequest.get()
+    storeObjectCountMeter.mark(response.items.length)
+    objectSizes.each {
+      storeObjectSizeMeter.mark(it)
+    }
   }
 
   @Override
