@@ -24,7 +24,7 @@ import java.util.zip.ZipFile
 @Produces(MediaType.APPLICATION_JSON)
 class GutenbergImportService implements WebService {
 
-  private static final Logger log = LoggerFactory.getLogger(GutenbergImportService)
+  private final Logger log = LoggerFactory.getLogger(GutenbergImportService)
 
   private final Datastore datastore
   private final Random rand
@@ -37,6 +37,7 @@ class GutenbergImportService implements WebService {
 
   @GET
   @Path('import')
+  @SuppressWarnings('unused')
   ImportResult importBooks(final @QueryParam('root_dir') File rootDir,
                            final @QueryParam('threads') Optional<Integer> threadsParam,
                            final @QueryParam('buffer_size') Optional<Integer> bufferSizeParam) {
@@ -66,6 +67,8 @@ class GutenbergImportService implements WebService {
 
           try {
             zipFile = new ZipFile(f)
+
+            // there is only a single entry in each zip file
             ZipEntry zipEntry = zipFile.entries().nextElement()
 
             if(zipEntry.size > threadBufferRemaining) {
