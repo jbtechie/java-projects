@@ -1,9 +1,10 @@
 package com.compuality.sandbox.main
 import com.compuality.collection.CollectionAppender
 import com.compuality.dropwizard.DropwizardModule
-
 import com.compuality.inject.BindAnnotatedModule
 import com.compuality.service.ServicesModule
+import com.compuality.service.WebServiceModule
+import com.compuality.services.ui.View
 import com.google.inject.Guice
 import com.google.inject.Module
 import com.yammer.dropwizard.Service
@@ -26,8 +27,9 @@ class MainDropwizardApp extends Service<MainDropwizardAppConfig> {
   void run(MainDropwizardAppConfig config, Environment env) throws Exception {
 
     moduleRegistry.add(new BindAnnotatedModule(config))
-    moduleRegistry.add(new DropwizardModule(config, env))
-    moduleRegistry.add(new ServicesModule())
+        .add(new DropwizardModule(config, env))
+        .add(new ServicesModule())
+        .add(new WebServiceModule(View))
 
     Guice.createInjector(moduleRegistry.items())
   }
