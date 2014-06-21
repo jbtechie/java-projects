@@ -6,8 +6,8 @@ $(document).ready(function() {
       contentType: 'application/json',
       data: JSON.stringify(iterationCount),
       dataType: 'text',
-      success: function(sum, textStatus, jqXhr) {
-        outputFunc(sum);
+      success: function(elems, textStatus, jqXhr) {
+        outputFunc(JSON.parse(elems));
       },
       error: function(jqXhr, textStatus, errorThrown) {
         console.log(textStatus);
@@ -23,8 +23,8 @@ $(document).ready(function() {
       contentType: 'application/json',
       data: JSON.stringify(iterationCount),
       dataType: 'text',
-      success: function(sum, textStatus, jqXhr) {
-        outputFunc(sum);
+      success: function(elems, textStatus, jqXhr) {
+        outputFunc(JSON.parse(elems));
       },
       error: function(jqXhr, textStatus, errorThrown) {
         console.log(textStatus);
@@ -38,31 +38,30 @@ $(document).ready(function() {
     for(i=0; i < iterationCount; ++i) {
       elems[i] = Math.random();
     }
-    var sum = 0;
-    for(i=0; i < iterationCount; ++i) {
-      sum += elems[i];
-    }
-    outputFunc(sum);
+    outputFunc(elems);
   };
 
-  var timeMath = function(mathFunc) {
+  var timeMath = function(mathFunc, nextFunc) {
     var iterationCount = 10000000;
     var startTime = new Date().getTime();
 
-    mathFunc(iterationCount, function(sum) {
+    mathFunc(iterationCount, function(elems) {
+      var sum = 0;
+      for(i=0; i < iterationCount; ++i) {
+        sum += elems[i];
+      }
       var duration = new Date().getTime() - startTime;
       $('<div/>', {
         text: 'function=' + mathFunc.name + ', duration=' + duration + ', sum=' + sum
       }).appendTo('#results');
+
+      nextFunc();
     });
   }
 
-  timeMath(function browser(iterationCount, outputFunc) {
-    doMathInBrowser(iterationCount, outputFunc);
-    timeMath(function groovy(iterationCount, outputFunc) {
-      doMathOnServer(iterationCount, outputFunc);
-        timeMath(function java(iterationCount, outputFunc) {
-        doMathOnJavaServer(iterationCount, outputFunc);
+  timeMath(doMathInBrowser, function() {
+    timeMath(doMathOnServer, function() {
+      timeMath(doMathOnJavaServer, function() {
       });
     });
   });

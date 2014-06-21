@@ -23,11 +23,11 @@ public class JavaMathService implements WebService {
   }
 
   @POST
-  public float post(int iterationCount) {
-    float sum = 0;
+  public float[] post(int iterationCount) {
+    float[] elems = new float[iterationCount];
     for(int i=0; i < iterationCount; ++i) {
-      sum += rand.nextFloat();
+      elems[i] = rand.nextFloat();
     }
-    return sum;
+    return elems;
   }
 }

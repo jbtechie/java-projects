@@ -16,17 +16,11 @@ class MathService implements WebService {
   @Inject private Random rand
 
   @POST
-  double post(int iterationCount) {
-    println iterationCount
-    List<Double> elems = []
+  float[] post(int iterationCount) {
+    float[] elems = new float[iterationCount]
     for(int i=0; i < iterationCount; ++i) {
-       elems.add rand.nextFloat()
+       elems[i] = rand.nextFloat()
     }
-    double sum = 0
-    for(int i=0; i < iterationCount; ++i) {
-      sum += elems[i]
-    }
-    println sum
-    return sum
+    return elems
   }
 }
